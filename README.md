@@ -82,7 +82,7 @@ lrs:
       endpoint: https://my.lrs.test/data/xAPI/
       username: lskdfjlkdfjéa
       password: alédsfjkaàsld
-	special_tracker:
+    special_tracker:
       endpoint: https://my.other.lrs.test/data/
       username: adfjéalksdfjé
       password: éaksdjféalkds
