@@ -161,7 +161,7 @@ class GravXapiPlugin extends Plugin
             $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.endpoint'),
             '1.0.1',
             $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.username'),
-            $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.pasword')
+            $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.password')
         );
     }
     /**
