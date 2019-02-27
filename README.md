@@ -113,9 +113,7 @@ filter:
         - login
         - listings
     taxonomies:
-       category: 
        tag: ['fun']
-       authors:
     users:
         - jdoe
     groups:
