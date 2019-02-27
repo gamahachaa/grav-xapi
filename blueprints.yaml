@@ -1,0 +1,31 @@
+name: Xapi
+version: 0.1.0
+description: Send usage statement [1;5D[[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[H[D[D[D[D[D[D[D[D[D[D[D[D[[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[F[B[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CThis plugin s[Dsend XAPI[2~ statements to the LRS of your choice
+icon: plug
+author:
+  name: Bruno Baudry
+  email: bbaudry@gmail.com
+homepage: https://github.com/bruno-baudry/grav-plugin-xapi
+demo: http://demo.yoursite.com
+keywords: grav, plugin, etc
+bugs: https://github.com/bruno-baudry/grav-plugin-xapi/issues
+docs: https://github.com/bruno-baudry/grav-plugin-xapi/blob/develop/README.md
+license: MIT
+
+form:
+  validation: strict
+  fields:
+    enabled:
+      type: toggle
+      label: PLUGIN_ADMIN.PLUGIN_STATUS
+      highlight: 1
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+    text_var:
+      type: text
+      label: PLUGIN_XAPI.TEXT_VARIABLE
+      help: PLUGIN_XAPI.TEXT_VARIABLE_HELP
