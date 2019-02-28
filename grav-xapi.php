@@ -28,6 +28,7 @@ class GravXapiPlugin extends Plugin
     protected $lrs;
     /* @var $page Grav\Common\Page\Page */
     protected  $page;
+    protected $pname;
     public static function getSubscribedEvents()
     {
         return [
@@ -46,7 +47,7 @@ class GravXapiPlugin extends Plugin
      */
     public function onPluginsInitialized()
     {
-
+        $this->pname = 'grav-xapi';
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
@@ -100,16 +101,16 @@ class GravXapiPlugin extends Plugin
         if($this->page->modular()) 
             return false;
         // Do not track if user is listed in the plugin (typically for admins)
-        if(in_array($this->user->login, $this->grav['config']->get('plugins.xapi.filter.users' ))){
+        if(in_array($this->user->login, $this->grav['config']->get('plugins.'.$this->pname.'.filter.users' ))){
             return false;
         }
         // Do not track a certain page template
-        if( in_array($this->page->template(), $this->grav['config']->get('plugins.xapi.filter.template' ))) 
+        if( in_array($this->page->template(), $this->grav['config']->get('plugins.'.$this->pname.'.filter.template' ))) 
                 return false;
         // Do not track if user's groups are in filter's groups
         foreach ( $this->user->groups as $g)
         {
-            if(in_array($g, $this->grav['config']->get('plugins.xapi.filter.groups' ))){
+            if(in_array($g, $this->grav['config']->get('plugins.'.$this->pname.'.filter.groups' ))){
                 return false;
             }
         }
@@ -118,7 +119,7 @@ class GravXapiPlugin extends Plugin
         $pageTaxo = $this->page->taxonomy();
         foreach ( $sysTaxo as $t ) 
         {
-           $filterTaxo = $this->grav['config']->get('plugins.xapi.filter.taxonomies.'.$t );
+           $filterTaxo = $this->grav['config']->get('plugins.'.$this->pname.'.filter.taxonomies.'.$t );
            if(isset($filterTaxo) && isset($pageTaxo[$t]))
            {
                foreach($filterTaxo as $ft)
@@ -149,7 +150,7 @@ class GravXapiPlugin extends Plugin
         {
             foreach ($u->groups as $g)
             {
-                if($this->grav['config']->get('plugins.xapi.lrs.'.$g))
+                if($this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$g))
                 {
                     $config = $g;
                     break;
@@ -158,10 +159,10 @@ class GravXapiPlugin extends Plugin
         }
         
         $this->lrs = new \TinCan\RemoteLRS(
-            $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.endpoint'),
+            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.endpoint'),
             '1.0.1',
-            $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.username'),
-            $this->grav['config']->get('plugins.xapi.lrs.'.$config.'.password')
+            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.username'),
+            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.password')
         );
     }
     /**
@@ -173,15 +174,15 @@ class GravXapiPlugin extends Plugin
     {
 //        $this->grav['debugger']->addMessage('prepareVerb');
 //        $this->grav['debugger']->addMessage($template);
-//        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.xapi.verb.'.$template));
-        if($this->grav['config']->get('plugins.xapi.verb.'.$template))
+//        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template));
+        if($this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template))
         {
             return new \TinCan\Verb([
-                    'id' => $this->grav['config']->get('plugins.xapi.verb.'.$template)
+                    'id' => $this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template)
                 ]);
         }
        return new \TinCan\Verb([
-                    'id' => $this->grav['config']->get('plugins.xapi.verb.default')
+                    'id' => $this->grav['config']->get('plugins.'.$this->pname.'.verb.default')
                 ]);
     }
     /**

@@ -2,3 +2,5 @@ en:
   PLUGIN_XAPI:
     TEXT_VARIABLE: Text Variable
     TEXT_VARIABLE_HELP: Text to add to the top of a page
+    LRS_VAR: YAML Text Variable
+    LRS_HELP: Add your LRS

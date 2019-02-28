@@ -1,17 +1,15 @@
-name: Xapi
-version: 0.1.0
-description: Send usage statement [1;5D[[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[1;5D[H[D[D[D[D[D[D[D[D[D[D[D[D[[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[F[B[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[CThis plugin s[Dsend XAPI[2~ statements to the LRS of your choice
-icon: plug
+name: Grav-Xapi
+version: 0.3.0
+description: Add to grav LRS connectivity and basic page activity statements tracking. Turns your favorite grav app into an Learning Management System.
+icon: graduation-cap
 author:
   name: Bruno Baudry
   email: bbaudry@gmail.com
-homepage: https://github.com/bruno-baudry/grav-plugin-xapi
-demo: http://demo.yoursite.com
-keywords: grav, plugin, etc
-bugs: https://github.com/bruno-baudry/grav-plugin-xapi/issues
-docs: https://github.com/bruno-baudry/grav-plugin-xapi/blob/develop/README.md
-license: MIT
-
+homepage: https://github.com/gamahachaa/grav-xapi
+keywords: grav, plugin, xapi, e-learning, knowledge management, LRS, LMS
+bugs: https://github.com/gamahachaa/grav-xapi/issues
+docs: https://github.com/gamahachaa/grav-xapi/blob/develop/README.md
+license: Apache 2.0
 form:
   validation: strict
   fields:
@@ -29,3 +27,8 @@ form:
       type: text
       label: PLUGIN_XAPI.TEXT_VARIABLE
       help: PLUGIN_XAPI.TEXT_VARIABLE_HELP
+    lrs:
+        type: textarea
+        label: PLUGIN_XAPI.LRS_VAR
+        help: PLUGIN_XAPI.LRS_VAR_HELP
+        
