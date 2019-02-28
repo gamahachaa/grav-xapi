@@ -173,6 +173,14 @@ class GravXapiPlugin extends Plugin
             $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.username'),
             $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.password')
         );
+        try{
+            $about = $this->lrs->about();
+            $this->grav['debugger']->addMessage($about);
+        }
+        catch(ErrorException $e)
+        {
+            dump($e);
+        }
     }
     /**
      * Get verb based on page template mapped to config list of templates/verbs
