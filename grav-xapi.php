@@ -91,6 +91,13 @@ class GravXapiPlugin extends Plugin
             $this->grav['debugger']->addMessage('befor DO STATEMENT');
             $response = $this->doStatement($e['page']);
             $this->grav['debugger']->addMessage('after DO STATEMENT');
+            if($response)
+            {
+                $this->grav['debugger']->addMessage('success');
+            }
+            else{
+                $this->grav['debugger']->addMessage('failed');
+            }
             $this->time = time();
             setcookie("start", $this->time, $this->time + 3600, "/");
         }
@@ -220,13 +227,15 @@ class GravXapiPlugin extends Plugin
         $context->setPlatform($this->grav['config']->get('site.title'));
         $context->setLanguage($page->language());
         // PUSH
-        return $this->lrs->saveStatement(
-            [
+        $statement = New \TinCan\Statement([
                 'actor' => $actor,
                 'verb' => $verb,
                 'object' => $object,
                 'context' => $context
-            ]
+            ]);
+        dump($statement);
+        return $this->lrs->saveStatement(
+            $statement
         );
     }
 
