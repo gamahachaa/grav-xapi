@@ -88,7 +88,9 @@ class GravXapiPlugin extends Plugin
         $this->grav['debugger']->addMessage('onPageInitialized');
         if($this->filter() )
         {
+            $this->grav['debugger']->addMessage('befor DO STATEMENT');
             $response = $this->doStatement($e['page']);
+            $this->grav['debugger']->addMessage('after DO STATEMENT');
             $this->time = time();
             setcookie("start", $this->time, $this->time + 3600, "/");
         }
@@ -198,6 +200,7 @@ class GravXapiPlugin extends Plugin
                     'mbox' => 'mailto:'.$this->user->email,
                     'name' => $this->user->login
                 ]);
+        
         // DID
         $verb = $this->prepareVerb($page->template());
         // WHAT
