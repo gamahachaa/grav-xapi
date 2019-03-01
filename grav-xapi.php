@@ -241,7 +241,9 @@ class GravXapiPlugin extends Plugin
                 'object' => $object,
                 'context' => $context
             ]);
-        dump($statement);
+        $this->grav['debugger']->addMessage($statement);
+        $this->grav['debugger']->addMessage(json_encode($statement));
+        
         return $this->lrs->saveStatement(
             $statement
         );
