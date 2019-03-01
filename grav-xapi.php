@@ -153,13 +153,19 @@ class GravXapiPlugin extends Plugin {
                 }
             }
         }
-
+        $endpoint = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.endpoint');
+        $username =  $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username');
+        $password = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.password');
         $this->lrs = new \TinCan\RemoteLRS(
-                $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.endpoint'), '1.0.1', $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username'), $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.password')
+                $endpoint, '1.0.1',$username, $password
         );
         try {
             $about = $this->lrs->about();
             $this->grav['debugger']->addMessage($about);
+            $this->grav['debugger']->addMessage($this->lrs->getEndpoint());
+            $this->grav['debugger']->addMessage($endpoint);
+            $this->grav['debugger']->addMessage($username);
+            $this->grav['debugger']->addMessage($password);
         } catch (ErrorException $e) {
             dump($e);
         }
