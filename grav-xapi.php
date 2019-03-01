@@ -1,4 +1,5 @@
 <?php
+
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
@@ -10,8 +11,8 @@ use Grav\Common\User\User;
  * Class XapiPlugin
  * @package Grav\Plugin
  */
-class GravXapiPlugin extends Plugin
-{
+class GravXapiPlugin extends Plugin {
+
     /**
      * @return array
      *
@@ -27,17 +28,17 @@ class GravXapiPlugin extends Plugin
     protected $time;
     protected $lrs;
     /* @var $page Grav\Common\Page\Page */
-    protected  $page;
+    protected $page;
     protected $pname;
-    public static function getSubscribedEvents()
-    {
+
+    public static function getSubscribedEvents() {
         return [
 //            'onPageContentProcessed' => ['onPageContentProcessed', 0],
             'onPageInitialized' => ['onPageInitialized', 0],
             'onShutdown' => ['onShutdown', 0],
             'onPluginsInitialized' => [
-                ['autoload', 100000],
-                ['onPluginsInitialized', 0]
+                    ['autoload', 100000],
+                    ['onPluginsInitialized', 0]
             ]
         ];
     }
@@ -45,8 +46,7 @@ class GravXapiPlugin extends Plugin
     /**
      * Initialize the plugin
      */
-    public function onPluginsInitialized()
-    {
+    public function onPluginsInitialized() {
         $this->pname = 'grav-xapi';
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
@@ -57,165 +57,146 @@ class GravXapiPlugin extends Plugin
             return;
         }
     }
+
     /**
      * [onPluginsInitialized:100000] Composer autoload.
      *
      * @return ClassLoader
      */
-    public function autoload()
-    {
+    public function autoload() {
         return require __DIR__ . '/vendor/autoload.php';
     }
+
     /**
      * Do some work for this event, full details of events can be found
      * on the learn site: http://learn.getgrav.org/plugins/event-hooks
      *
      * @param Event $e
      */
-    public function onPageInitialized(Event $e)
-    {
+    public function onPageInitialized(Event $e) {
         // Get a variable from the plugin configuration
         $grav = $this->grav;
         $this->user = $grav['user'];
-        if(!$this->user->authorize('site.login'))
-        {
+        if (!$this->user->authorize('site.login')) {
             return;
         }
         $this->page = $e['page'];
         $this->prepareLRS($this->user);
-        
+
         // Get the current raw content
         $this->grav['debugger']->addMessage('onPageInitialized');
-        if($this->filter() )
-        {
+        if ($this->filter()) {
             $this->grav['debugger']->addMessage('befor DO STATEMENT');
             $response = $this->doStatement($e['page']);
             $this->grav['debugger']->addMessage('after DO STATEMENT');
-            if($response)
-            {
+            if ($response) {
                 $this->grav['debugger']->addMessage('success');
-            }
-            else{
+            } else {
                 $this->grav['debugger']->addMessage('failed');
             }
             $this->time = time();
             setcookie("start", $this->time, $this->time + 3600, "/");
         }
-        
     }
-    function filter(){
-        
+
+    function filter() {
+
 //        $this->grav['debugger']->addMessage('filter');
         // DO not track modular
-        if($this->page->modular()) 
+        if ($this->page->modular())
             return false;
         // Do not track if user is listed in the plugin (typically for admins)
-        if(in_array($this->user->login, $this->grav['config']->get('plugins.'.$this->pname.'.filter.users' ))){
+        if (in_array($this->user->login, $this->grav['config']->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
         // Do not track a certain page template
-        if( in_array($this->page->template(), $this->grav['config']->get('plugins.'.$this->pname.'.filter.template' ))) 
-                return false;
+        if (in_array($this->page->template(), $this->grav['config']->get('plugins.' . $this->pname . '.filter.template')))
+            return false;
         // Do not track if user's groups are in filter's groups
-        foreach ( $this->user->groups as $g)
-        {
-            if(in_array($g, $this->grav['config']->get('plugins.'.$this->pname.'.filter.groups' ))){
+        foreach ($this->user->groups as $g) {
+            if (in_array($g, $this->grav['config']->get('plugins.' . $this->pname . '.filter.groups'))) {
                 return false;
             }
         }
         // do not track pages with particular taxo
-        $sysTaxo =  $this->grav['config']->get('site.taxonomies' );
+        $sysTaxo = $this->grav['config']->get('site.taxonomies');
         $pageTaxo = $this->page->taxonomy();
-        foreach ( $sysTaxo as $t ) 
-        {
-           $filterTaxo = $this->grav['config']->get('plugins.'.$this->pname.'.filter.taxonomies.'.$t );
-           if(isset($filterTaxo) && isset($pageTaxo[$t]))
-           {
-               foreach($filterTaxo as $ft)
-               {
-                   $this->grav['debugger']->addMessage($pageTaxo[$t]);
-                   $this->grav['debugger']->addMessage($ft);
-                   if(in_array($ft, $pageTaxo[$t]))
-                   {
-                       $this->grav['debugger']->addMessage( 'filtered ');
-                       return false;
-                   }
-               }
-           }
-               
+        foreach ($sysTaxo as $t) {
+            $filterTaxo = $this->grav['config']->get('plugins.' . $this->pname . '.filter.taxonomies.' . $t);
+            if (isset($filterTaxo) && isset($pageTaxo[$t])) {
+                foreach ($filterTaxo as $ft) {
+                    $this->grav['debugger']->addMessage($pageTaxo[$t]);
+                    $this->grav['debugger']->addMessage($ft);
+                    if (in_array($ft, $pageTaxo[$t])) {
+                        $this->grav['debugger']->addMessage('filtered ');
+                        return false;
+                    }
+                }
+            }
         }
-         $this->grav['debugger']->addMessage('passed filter');
+        $this->grav['debugger']->addMessage('passed filter');
         return true;
     }
+
     /**
      * Get the LRS base on the config group mapping to list of LRS
      * Sets the connection to the first found matching LRS
      * @param User $u
      */
-    protected function prepareLRS(User $u)
-    {
+    protected function prepareLRS(User $u) {
         $config = 'default';
-        if(isset($u->groups))
-        {
-            foreach ($u->groups as $g)
-            {
-                if($this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$g))
-                {
+        if (isset($u->groups)) {
+            foreach ($u->groups as $g) {
+                if ($this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $g)) {
                     $config = $g;
                     break;
                 }
             }
         }
-        
+
         $this->lrs = new \TinCan\RemoteLRS(
-            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.endpoint'),
-            '1.0.1',
-            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.username'),
-            $this->grav['config']->get('plugins.'.$this->pname.'.lrs.'.$config.'.password')
+                $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.endpoint'), '1.0.1', $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username'), $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.password')
         );
-        try{
+        try {
             $about = $this->lrs->about();
             $this->grav['debugger']->addMessage($about);
-        }
-        catch(ErrorException $e)
-        {
+        } catch (ErrorException $e) {
             dump($e);
         }
     }
+
     /**
      * Get verb based on page template mapped to config list of templates/verbs
      * @param type $template
      * @return \TinCan\Verb
      */
-    protected function prepareVerb($template)
-    {
+    protected function prepareVerb($template) {
 //        $this->grav['debugger']->addMessage('prepareVerb');
 //        $this->grav['debugger']->addMessage($template);
 //        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template));
-        if($this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template))
-        {
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.verb.' . $template)) {
             return new \TinCan\Verb([
-                    'id' => $this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template)
-                ]);
+                'id' => $this->grav['config']->get('plugins.' . $this->pname . '.verb.' . $template)
+            ]);
         }
-       return new \TinCan\Verb([
-                    'id' => $this->grav['config']->get('plugins.'.$this->pname.'.verb.default')
-                ]);
+        return new \TinCan\Verb([
+            'id' => $this->grav['config']->get('plugins.' . $this->pname . '.verb.default')
+        ]);
     }
+
     /**
      * Send statement to LRS
      * @param \Grav\Plugin\Grav\Common\Page\Page $page
      * @return type
      */
-    protected function doStatement(Page $page)
-    {
+    protected function doStatement(Page $page) {
         $header = $page->header();
         // WHO
         $actor = new \TinCan\Agent([
-                    'mbox' => 'mailto:'.$this->user->email,
-                    'name' => $this->user->login
-                ]);
-        
+            'mbox' => 'mailto:' . $this->user->email,
+            'name' => $this->user->login
+        ]);
+
         // DID
         $verb = $this->prepareVerb($page->template());
         // WHAT
@@ -223,31 +204,61 @@ class GravXapiPlugin extends Plugin
 //        $object->setId($page->canonical(false));
         $object->setId($page->url(true));
         $object->setDefinition([
-                        'name' => [
-                            $page->language() => $page->title()
-                        ],
-                        'description' => [
-                            $page->language() => isset($header->metadata) && isset($header->metadata['description'])?$header->metadata['description']:'',
-                        ],
-                        'type' => $page->template()=="listing"?'http://activitystrea.ms/schema/1.0/collection':'http://activitystrea.ms/schema/1.0/page'
-                    ]);
+            'name' => [
+                $page->language() => $page->title()
+            ],
+            'description' => [
+                $page->language() => isset($header->metadata) && isset($header->metadata['description']) ? $header->metadata['description'] : '',
+            ],
+            'type' => $page->template() == "listing" ? 'http://activitystrea.ms/schema/1.0/collection' : 'http://activitystrea.ms/schema/1.0/page'
+        ]);
         // HOW
         $context = new \TinCan\Context();
         $context->setPlatform($this->grav['config']->get('site.title'));
         $context->setLanguage($page->language());
         // PUSH
         $statement = New \TinCan\Statement([
-                'actor' => $actor,
-                'verb' => $verb,
-                'object' => $object,
-                'context' => $context
-            ]);
+            'actor' => $actor,
+            'verb' => $verb,
+            'object' => $object,
+            'context' => $context
+        ]);
         $this->grav['debugger']->addMessage($statement);
         $this->grav['debugger']->addMessage($statement->asVersion('1.0.1'));
-        
-        return $this->lrs->saveStatement(
-            $statement
+
+//        $response = $this->lrs->saveStatement(
+//            $statement
+//        );
+        $response = $this->lrs->saveStatement(
+                [
+                    "actor" => [
+                        "objectType" => "Agent",
+                        "name" => "bbaudry",
+                        "mbox" => "mailto:Bruno.Baudry@salt.ch"
+                    ],
+                    "verb" => [
+                        "id" => "http://adlnet.gov/expapi/verbs/experienced"
+                    ],
+                    "context" => [
+                        "platform" => "Qook",
+                        "language" => "fr"
+                    ],
+                    "object" => [
+                        "objectType" => "Activity",
+                        "id" => "https://qook.test.salt.ch:80/fr",
+                        "definition" => [
+                            "type" => "http://activitystrea.ms/schema/1.0/page",
+                            "name" => [
+                                "fr" => "News"
+                            ],
+                            "description" => [
+                                "fr" => ""
+                            ]
+                        ]
+                    ]
+                ]
         );
+        return $response;
     }
 
 }
