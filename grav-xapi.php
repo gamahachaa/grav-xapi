@@ -81,27 +81,32 @@ class GravXapiPlugin extends Plugin {
             return;
         }
         $this->page = $e['page'];
+        // SET CONNEXION
         $this->prepareLRS($this->user);
-
-        // Get the current raw content
-        $this->grav['debugger']->addMessage('onPageInitialized');
+//        $this->grav['debugger']->addMessage('onPageInitialized');
+        // IF PASS FILTER 
         if ($this->filter()) {
-            $this->grav['debugger']->addMessage('befor DO STATEMENT');
-            $response = $this->doStatement($e['page']);
-            $this->grav['debugger']->addMessage('after DO STATEMENT');
+            
+            $statement = $this->prepareStatement($e['page']);
+            // SEND STATEMENT
+            $response = $this->lrs->saveStatement($statement);
             if ($response) {
+
+                $this->grav['debugger']->getCaller();
                 $this->grav['debugger']->addMessage('success');
+//                $this->time = time();
+//                setcookie("start", $this->time, $this->time + 3600, "/");
             } else {
+
                 $this->grav['debugger']->addMessage('failed');
+                $this->grav['debugger']->addMessage($statement);
+                
+//                $this->grav['debugger']->addMessage('failed');
             }
-            $this->time = time();
-            setcookie("start", $this->time, $this->time + 3600, "/");
         }
     }
 
     function filter() {
-
-//        $this->grav['debugger']->addMessage('filter');
         // DO not track modular
         if ($this->page->modular())
             return false;
@@ -125,8 +130,8 @@ class GravXapiPlugin extends Plugin {
             $filterTaxo = $this->grav['config']->get('plugins.' . $this->pname . '.filter.taxonomies.' . $t);
             if (isset($filterTaxo) && isset($pageTaxo[$t])) {
                 foreach ($filterTaxo as $ft) {
-                    $this->grav['debugger']->addMessage($pageTaxo[$t]);
-                    $this->grav['debugger']->addMessage($ft);
+//                    $this->grav['debugger']->addMessage($pageTaxo[$t]);
+//                    $this->grav['debugger']->addMessage($ft);
                     if (in_array($ft, $pageTaxo[$t])) {
                         $this->grav['debugger']->addMessage('filtered ');
                         return false;
@@ -134,7 +139,7 @@ class GravXapiPlugin extends Plugin {
                 }
             }
         }
-        $this->grav['debugger']->addMessage('passed filter');
+//        $this->grav['debugger']->addMessage('passed filter');
         return true;
     }
 
@@ -154,20 +159,30 @@ class GravXapiPlugin extends Plugin {
             }
         }
         $endpoint = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.endpoint');
-        $username =  $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username');
+        $username = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username');
         $password = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.password');
         $this->lrs = new \TinCan\RemoteLRS(
-                $endpoint, '1.0.1',$username, $password
+                $endpoint, '1.0.1', $username, $password
         );
         try {
             $about = $this->lrs->about();
             $this->grav['debugger']->addMessage($about);
+        } catch (ErrorException $e) {
+            //if can't connect debug or log
+            $this->grav['debugger']->addMessage($e);
+
             $this->grav['debugger']->addMessage($this->lrs->getEndpoint());
             $this->grav['debugger']->addMessage($endpoint);
             $this->grav['debugger']->addMessage($username);
             $this->grav['debugger']->addMessage($password);
-        } catch (ErrorException $e) {
-            dump($e);
+
+
+            $this->grav['log']->critical('GRAV XAPI cannot connect to LRS');
+            $this->grav['log']->error($e);
+            $this->grav['log']->info('OBJECT ENDPOINT ' . $this->lrs->getEndpoint());
+            $this->grav['log']->info('CONFIG ENDPOINT ' . $endpoint);
+            $this->grav['log']->info('CONFIG USER' . $username);
+            $this->grav['log']->info('CONFIG PWD' . $password);
         }
     }
 
@@ -177,9 +192,6 @@ class GravXapiPlugin extends Plugin {
      * @return \TinCan\Verb
      */
     protected function prepareVerb($template) {
-//        $this->grav['debugger']->addMessage('prepareVerb');
-//        $this->grav['debugger']->addMessage($template);
-//        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.'.$this->pname.'.verb.'.$template));
         if ($this->grav['config']->get('plugins.' . $this->pname . '.verb.' . $template)) {
             return new \TinCan\Verb([
                 'id' => $this->grav['config']->get('plugins.' . $this->pname . '.verb.' . $template)
@@ -195,7 +207,7 @@ class GravXapiPlugin extends Plugin {
      * @param \Grav\Plugin\Grav\Common\Page\Page $page
      * @return type
      */
-    protected function doStatement(Page $page) {
+    protected function prepareStatement(Page $page) {
         $header = $page->header();
         // WHO
         $actor = new \TinCan\Agent([
@@ -222,49 +234,14 @@ class GravXapiPlugin extends Plugin {
         $context = new \TinCan\Context();
         $context->setPlatform($this->grav['config']->get('site.title'));
         $context->setLanguage($page->language());
-        // PUSH
+        // BUILD
         $statement = New \TinCan\Statement([
             'actor' => $actor,
             'verb' => $verb,
             'object' => $object,
             'context' => $context
         ]);
-        $this->grav['debugger']->addMessage($statement);
-        $this->grav['debugger']->addMessage($statement->asVersion('1.0.1'));
-
-//        $response = $this->lrs->saveStatement(
-//            $statement
-//        );
-        $response = $this->lrs->saveStatement(
-                [
-                    "actor" => [
-                        "objectType" => "Agent",
-                        "name" => "bbaudry",
-                        "mbox" => "mailto:Bruno.Baudry@salt.ch"
-                    ],
-                    "verb" => [
-                        "id" => "http://adlnet.gov/expapi/verbs/experienced"
-                    ],
-                    "context" => [
-                        "platform" => "Qook",
-                        "language" => "fr"
-                    ],
-                    "object" => [
-                        "objectType" => "Activity",
-                        "id" => "https://qook.test.salt.ch:80/fr",
-                        "definition" => [
-                            "type" => "http://activitystrea.ms/schema/1.0/page",
-                            "name" => [
-                                "fr" => "News"
-                            ],
-                            "description" => [
-                                "fr" => ""
-                            ]
-                        ]
-                    ]
-                ]
-        );
-        return $response;
+        return $statement;
     }
 
 }
