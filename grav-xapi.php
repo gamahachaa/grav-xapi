@@ -220,7 +220,8 @@ class GravXapiPlugin extends Plugin
         $verb = $this->prepareVerb($page->template());
         // WHAT
         $object = new \TinCan\Activity();
-        $object->setId($page->canonical(false));
+//        $object->setId($page->canonical(false));
+        $object->setId($page->url(true));
         $object->setDefinition([
                         'name' => [
                             $page->language() => $page->title()
