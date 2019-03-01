@@ -242,7 +242,7 @@ class GravXapiPlugin extends Plugin
                 'context' => $context
             ]);
         $this->grav['debugger']->addMessage($statement);
-        $this->grav['debugger']->addMessage(json_encode($statement));
+        $this->grav['debugger']->addMessage($statement->asVersion('1.0.1'));
         
         return $this->lrs->saveStatement(
             $statement
