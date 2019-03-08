@@ -35,7 +35,7 @@ class GravXapiPlugin extends Plugin {
         return [
 //            'onPageContentProcessed' => ['onPageContentProcessed', 0],
             'onPageInitialized' => ['onPageInitialized', 0],
-            'onShutdown' => ['onShutdown', 0],
+//            'onShutdown' => ['onShutdown', 0],
             'onPluginsInitialized' => [
                     ['autoload', 100000],
                     ['onPluginsInitialized', 0]
