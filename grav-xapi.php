@@ -166,7 +166,7 @@ class GravXapiPlugin extends Plugin {
         );
         try {
             $about = $this->lrs->about();
-            $this->grav['debugger']->addMessage($about);
+//            $this->grav['debugger']->addMessage($about);
         } catch (ErrorException $e) {
             //if can't connect debug or log
             $this->grav['debugger']->addMessage($e);
@@ -219,8 +219,10 @@ class GravXapiPlugin extends Plugin {
         $verb = $this->prepareVerb($page->template());
         // WHAT
         $object = new \TinCan\Activity();
-//        $object->setId($page->canonical(false));
-        $object->setId($page->url(true));
+        $activity_id = "https://".$this->grav['uri']->host().$page->url(false, false, false);
+        $object->setId($activity_id);
+        
+//         $this->grav['debugger']->addMessage($activity_id);
         $object->setDefinition([
             'name' => [
                 $page->language() => $page->title()
