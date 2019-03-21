@@ -83,10 +83,9 @@ class GravXapiPlugin extends Plugin {
         $this->page = $e['page'];
         // SET CONNEXION
         $this->prepareLRS($this->user);
-//        $this->grav['debugger']->addMessage('onPageInitialized');
         // IF PASS FILTER 
         if ($this->filter()) {
-            
+
             $statement = $this->prepareStatement($e['page']);
             // SEND STATEMENT
             $response = $this->lrs->saveStatement($statement);
@@ -94,14 +93,10 @@ class GravXapiPlugin extends Plugin {
 
                 $this->grav['debugger']->getCaller();
                 $this->grav['debugger']->addMessage('success');
-//                $this->time = time();
-//                setcookie("start", $this->time, $this->time + 3600, "/");
-            } else {
+                } else {
 
                 $this->grav['debugger']->addMessage('failed');
                 $this->grav['debugger']->addMessage($statement);
-                
-//                $this->grav['debugger']->addMessage('failed');
             }
         }
     }
@@ -111,16 +106,18 @@ class GravXapiPlugin extends Plugin {
         if ($this->page->modular())
             return false;
         // Do not track if user is listed in the plugin (typically for admins)
-        if (in_array($this->user->login, $this->grav['config']->get('plugins.' . $this->pname . '.filter.users'))) {
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->grav['config']->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
         // Do not track a certain page template
-        if (in_array($this->page->template(), $this->grav['config']->get('plugins.' . $this->pname . '.filter.template')))
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->grav['config']->get('plugins.' . $this->pname . '.filter.template')))
             return false;
         // Do not track if user's groups are in filter's groups
-        foreach ($this->user->groups as $g) {
-            if (in_array($g, $this->grav['config']->get('plugins.' . $this->pname . '.filter.groups'))) {
-                return false;
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.groups')) {
+            foreach ($this->user->groups as $g) {
+                if (in_array($g, $this->grav['config']->get('plugins.' . $this->pname . '.filter.groups'))) {
+                    return false;
+                }
             }
         }
         // do not track pages with particular taxo
@@ -130,8 +127,6 @@ class GravXapiPlugin extends Plugin {
             $filterTaxo = $this->grav['config']->get('plugins.' . $this->pname . '.filter.taxonomies.' . $t);
             if (isset($filterTaxo) && isset($pageTaxo[$t])) {
                 foreach ($filterTaxo as $ft) {
-//                    $this->grav['debugger']->addMessage($pageTaxo[$t]);
-//                    $this->grav['debugger']->addMessage($ft);
                     if (in_array($ft, $pageTaxo[$t])) {
                         $this->grav['debugger']->addMessage('filtered ');
                         return false;
@@ -139,7 +134,6 @@ class GravXapiPlugin extends Plugin {
                 }
             }
         }
-//        $this->grav['debugger']->addMessage('passed filter');
         return true;
     }
 
@@ -219,13 +213,10 @@ class GravXapiPlugin extends Plugin {
         $verb = $this->prepareVerb($page->template());
         // WHAT
         $object = new \TinCan\Activity();
-        $query = $this->grav['uri']->query()==''?'':"?". $this->grav['uri']->query();
-        $activity_id = "https://".$this->grav['uri']->host().$this->grav['uri']->path().$query;
+        $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
+        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
         $object->setId($activity_id);
-        
-         $this->grav['debugger']->addMessage($this->grav['uri']);
-         $this->grav['debugger']->addMessage($verb);
-         $this->grav['debugger']->addMessage($activity_id);
+
         $object->setDefinition([
             'name' => [
                 $page->language() => $page->title()

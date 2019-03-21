@@ -23,7 +23,7 @@ filter:
        category: 
        tag:
        authors:
-       audience: 'agents'
+       audience:
     users:
         - jdoe
     groups:
