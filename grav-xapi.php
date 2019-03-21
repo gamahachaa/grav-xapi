@@ -47,15 +47,16 @@ class GravXapiPlugin extends Plugin {
      * Initialize the plugin
      */
     public function onPluginsInitialized() {
+        // Don't proceed if we are in the admin plugin
+        if ($this->isAdmin()) {
+            return;
+        }
         $this->pname = 'grav-xapi';
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
         }
-        // Don't proceed if we are in the admin plugin
-        if ($this->isAdmin()) {
-            return;
-        }
+        
     }
 
     /**
@@ -75,6 +76,10 @@ class GravXapiPlugin extends Plugin {
      */
     public function onPageInitialized(Event $e) {
         // Get a variable from the plugin configuration
+        // Don't proceed if we are in the admin plugin
+        if ($this->isAdmin()) {
+            return;
+        }
         $grav = $this->grav;
         $this->user = $grav['user'];
         if (!$this->user->authorize('site.login')) {
