@@ -219,10 +219,13 @@ class GravXapiPlugin extends Plugin {
         $verb = $this->prepareVerb($page->template());
         // WHAT
         $object = new \TinCan\Activity();
-        $activity_id = "https://".$this->grav['uri']->host().$page->url(false, false, false);
+        $query = $this->grav['uri']->query()==''?'':"?". $this->grav['uri']->query();
+        $activity_id = "https://".$this->grav['uri']->host().$this->grav['uri']->path().$query;
         $object->setId($activity_id);
         
-//         $this->grav['debugger']->addMessage($activity_id);
+         $this->grav['debugger']->addMessage($this->grav['uri']);
+         $this->grav['debugger']->addMessage($verb);
+         $this->grav['debugger']->addMessage($activity_id);
         $object->setDefinition([
             'name' => [
                 $page->language() => $page->title()

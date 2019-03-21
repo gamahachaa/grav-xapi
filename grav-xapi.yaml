@@ -12,6 +12,7 @@ lrs:
 verb:
     default: http://activitystrea.ms/schema/1.0/read
     listing: http://activitystrea.ms/schema/1.0/search
+    all: http://activitystrea.ms/schema/1.0/search
     login: https://brindlewaye.com/xAPITerms/verbs/loggedin/
     report: http://id.tincanapi.com/verb/viewed
     home: http://adlnet.gov/expapi/verbs/experienced
