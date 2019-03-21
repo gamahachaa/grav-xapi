@@ -165,7 +165,6 @@ class GravXapiPlugin extends Plugin {
         );
         try {
             $about = $this->lrs->about();
-//            $this->grav['debugger']->addMessage($about);
         } catch (ErrorException $e) {
             //if can't connect debug or log
             $this->grav['debugger']->addMessage($e);
