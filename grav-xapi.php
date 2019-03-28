@@ -56,7 +56,6 @@ class GravXapiPlugin extends Plugin {
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
         }
-        
     }
 
     /**
@@ -98,7 +97,7 @@ class GravXapiPlugin extends Plugin {
 
                 $this->grav['debugger']->getCaller();
                 $this->grav['debugger']->addMessage('success');
-                } else {
+            } else {
 
                 $this->grav['debugger']->addMessage('failed');
                 $this->grav['debugger']->addMessage($statement);
@@ -108,6 +107,26 @@ class GravXapiPlugin extends Plugin {
 
     function filter() {
         // DO not track modular
+        $this->grav['debugger']->addMessage('XAPI FILTERING');
+        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri'));
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri')) {
+            $this->grav['debugger']->addMessage('XAPI FILTERING URI');
+            $uri = $this->grav['uri'];
+
+            
+
+            if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query')) {
+                $filtered_queries = $this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query');
+            $this->grav['debugger']->addMessage( $filtered_queries );
+                foreach ($filtered_queries as $v) {
+                    $this->grav['debugger']->addMessage( $v['key']);
+                    $this->grav['debugger']->addMessage( $v['value']);
+                    if($uri->query($v['key']) === $v['value'] ) return false;
+//                    $this->grav['debugger']->addMessage( $v['key']);
+//                    $this->grav['debugger']->addMessage( $v['value']);
+                }
+            }
+        }
         if ($this->page->modular())
             return false;
         // Do not track if user is listed in the plugin (typically for admins)
@@ -133,7 +152,7 @@ class GravXapiPlugin extends Plugin {
             if (isset($filterTaxo) && isset($pageTaxo[$t])) {
                 foreach ($filterTaxo as $ft) {
                     if (in_array($ft, $pageTaxo[$t])) {
-                        $this->grav['debugger']->addMessage('filtered ');
+//                        $this->grav['debugger']->addMessage('filtered ');
                         return false;
                     }
                 }

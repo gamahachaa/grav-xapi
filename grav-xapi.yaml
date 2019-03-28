@@ -28,5 +28,9 @@ filter:
         - jdoe
     groups:
         - Koko
+    uri:
+        query:
+            - key: 'backend'
+              value: 'tsv'            
     
         
