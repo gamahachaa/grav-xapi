@@ -107,20 +107,20 @@ class GravXapiPlugin extends Plugin {
 
     function filter() {
         // DO not track modular
-        $this->grav['debugger']->addMessage('XAPI FILTERING');
-        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri'));
+//        $this->grav['debugger']->addMessage('XAPI FILTERING');
+//        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri'));
         if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri')) {
-            $this->grav['debugger']->addMessage('XAPI FILTERING URI');
+//            $this->grav['debugger']->addMessage('XAPI FILTERING URI');
             $uri = $this->grav['uri'];
 
             
 
             if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query');
-            $this->grav['debugger']->addMessage( $filtered_queries );
+//            $this->grav['debugger']->addMessage( $filtered_queries );
                 foreach ($filtered_queries as $v) {
-                    $this->grav['debugger']->addMessage( $v['key']);
-                    $this->grav['debugger']->addMessage( $v['value']);
+//                    $this->grav['debugger']->addMessage( $v['key']);
+//                    $this->grav['debugger']->addMessage( $v['value']);
                     if($uri->query($v['key']) === $v['value'] ) return false;
 //                    $this->grav['debugger']->addMessage( $v['key']);
 //                    $this->grav['debugger']->addMessage( $v['value']);
@@ -182,25 +182,28 @@ class GravXapiPlugin extends Plugin {
         $this->lrs = new \TinCan\RemoteLRS(
                 $endpoint, '1.0.1', $username, $password
         );
-        try {
-            $about = $this->lrs->about();
-        } catch (ErrorException $e) {
-            //if can't connect debug or log
-            $this->grav['debugger']->addMessage($e);
-
-            $this->grav['debugger']->addMessage($this->lrs->getEndpoint());
-            $this->grav['debugger']->addMessage($endpoint);
-            $this->grav['debugger']->addMessage($username);
-            $this->grav['debugger']->addMessage($password);
-
-
-            $this->grav['log']->critical('GRAV XAPI cannot connect to LRS');
-            $this->grav['log']->error($e);
-            $this->grav['log']->info('OBJECT ENDPOINT ' . $this->lrs->getEndpoint());
-            $this->grav['log']->info('CONFIG ENDPOINT ' . $endpoint);
-            $this->grav['log']->info('CONFIG USER' . $username);
-            $this->grav['log']->info('CONFIG PWD' . $password);
-        }
+        /**
+         * @todo cache this request
+         */
+//        try {
+//            $about = $this->lrs->about();
+//        } catch (ErrorException $e) {
+//            //if can't connect debug or log
+//            $this->grav['debugger']->addMessage($e);
+//
+//            $this->grav['debugger']->addMessage($this->lrs->getEndpoint());
+//            $this->grav['debugger']->addMessage($endpoint);
+//            $this->grav['debugger']->addMessage($username);
+//            $this->grav['debugger']->addMessage($password);
+//
+//
+//            $this->grav['log']->critical('GRAV XAPI cannot connect to LRS');
+//            $this->grav['log']->error($e);
+//            $this->grav['log']->info('OBJECT ENDPOINT ' . $this->lrs->getEndpoint());
+//            $this->grav['log']->info('CONFIG ENDPOINT ' . $endpoint);
+//            $this->grav['log']->info('CONFIG USER' . $username);
+//            $this->grav['log']->info('CONFIG PWD' . $password);
+//        }
     }
 
     /**
