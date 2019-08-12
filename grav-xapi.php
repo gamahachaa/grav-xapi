@@ -27,15 +27,13 @@ class GravXapiPlugin extends Plugin {
     protected $user;
     protected $time;
     protected $lrs;
-    /* @var $page Grav\Common\Page\Page */
     protected $page;
     protected $pname;
+    protected $cache;
 
     public static function getSubscribedEvents() {
         return [
-//            'onPageContentProcessed' => ['onPageContentProcessed', 0],
             'onPageInitialized' => ['onPageInitialized', 0],
-//            'onShutdown' => ['onShutdown', 0],
             'onPluginsInitialized' => [
                     ['autoload', 100000],
                     ['onPluginsInitialized', 0]
@@ -51,6 +49,7 @@ class GravXapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
+        $this->cache = $this->grav['cache'];
         $this->pname = 'grav-xapi';
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
@@ -85,9 +84,9 @@ class GravXapiPlugin extends Plugin {
             return;
         }
         $this->page = $e['page'];
-        // SET CONNEXION
+        // SET CONNEXION to the LRS
         $this->prepareLRS($this->user);
-        // IF PASS FILTER 
+        // send statement if not filtered
         if ($this->filter()) {
 
             $statement = $this->prepareStatement($e['page']);
@@ -104,39 +103,44 @@ class GravXapiPlugin extends Plugin {
             }
         }
     }
-
-    function filter() {
-        // DO not track modular
-//        $this->grav['debugger']->addMessage('XAPI FILTERING');
-//        $this->grav['debugger']->addMessage($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri'));
+    /**
+     * 
+     * @return boolean
+     */
+    private function filter() {
+        // do not track routes and uri queries
         if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri')) {
-//            $this->grav['debugger']->addMessage('XAPI FILTERING URI');
             $uri = $this->grav['uri'];
-
-            
-
+            /**
+             * @todo add wild cards
+             */
+            // routes
+            if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.routes')) {
+                $filtered_routes = $this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.routes');
+                foreach ($filtered_routes as $v) {
+                    if($uri->route() === $v ) return false;
+                }
+            }
+            // queries
             if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->grav['config']->get('plugins.' . $this->pname . '.filter.uri.query');
-//            $this->grav['debugger']->addMessage( $filtered_queries );
                 foreach ($filtered_queries as $v) {
-//                    $this->grav['debugger']->addMessage( $v['key']);
-//                    $this->grav['debugger']->addMessage( $v['value']);
                     if($uri->query($v['key']) === $v['value'] ) return false;
-//                    $this->grav['debugger']->addMessage( $v['key']);
-//                    $this->grav['debugger']->addMessage( $v['value']);
                 }
             }
         }
+        // DO not track modular's modules (does not affect pages made of collections)
         if ($this->page->modular())
             return false;
-        // Do not track if user is listed in the plugin (typically for admins)
+        
+        // Do not track a certain page based on its tempoale
+        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->grav['config']->get('plugins.' . $this->pname . '.filter.template')))
+            return false;
+        // Do not track users
         if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->grav['config']->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
-        // Do not track a certain page template
-        if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->grav['config']->get('plugins.' . $this->pname . '.filter.template')))
-            return false;
-        // Do not track if user's groups are in filter's groups
+        // Do not track users if they belong to acertain group
         if ($this->grav['config']->get('plugins.' . $this->pname . '.filter.groups')) {
             foreach ($this->user->groups as $g) {
                 if (in_array($g, $this->grav['config']->get('plugins.' . $this->pname . '.filter.groups'))) {
@@ -152,7 +156,6 @@ class GravXapiPlugin extends Plugin {
             if (isset($filterTaxo) && isset($pageTaxo[$t])) {
                 foreach ($filterTaxo as $ft) {
                     if (in_array($ft, $pageTaxo[$t])) {
-//                        $this->grav['debugger']->addMessage('filtered ');
                         return false;
                     }
                 }
@@ -168,6 +171,7 @@ class GravXapiPlugin extends Plugin {
      */
     protected function prepareLRS(User $u) {
         $config = 'default';
+        // find the user's first group available in the plugin config and track to that LRS's client
         if (isset($u->groups)) {
             foreach ($u->groups as $g) {
                 if ($this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $g)) {
@@ -176,6 +180,9 @@ class GravXapiPlugin extends Plugin {
                 }
             }
         }
+        /**
+         * @todo add version in the config
+         */
         $endpoint = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.endpoint');
         $username = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.username');
         $password = $this->grav['config']->get('plugins.' . $this->pname . '.lrs.' . $config . '.password');
@@ -242,20 +249,23 @@ class GravXapiPlugin extends Plugin {
         $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
         $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
         $object->setId($activity_id);
-
+        $language = $page->language();
+        /**
+         * @todo make definition creation flexible before publishing.
+         */
         $object->setDefinition([
             'name' => [
-                $page->language() => $page->title()
+                $language => $page->title()
             ],
             'description' => [
-                $page->language() => isset($header->metadata) && isset($header->metadata['description']) ? $header->metadata['description'] : '',
+                $language => isset($header->metadata) && isset($header->metadata['description']) ? $header->metadata['description'] : 'No description found',
             ],
             'type' => $page->template() == "listing" ? 'http://activitystrea.ms/schema/1.0/collection' : 'http://activitystrea.ms/schema/1.0/page'
         ]);
         // HOW
         $context = new \TinCan\Context();
         $context->setPlatform($this->grav['config']->get('site.title'));
-        $context->setLanguage($page->language());
+        $context->setLanguage($language);
         // BUILD
         $statement = New \TinCan\Statement([
             'actor' => $actor,
