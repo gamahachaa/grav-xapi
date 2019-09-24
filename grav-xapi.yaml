@@ -1,24 +1,40 @@
 enabled: true
+php: 
+    active: true
+    
+js: 
+    active: false
+    
 text_var: Custom Text added by the **Xapi** plugin (disable plugin to remove)
 lrs:
-    ldap_user:
-      endpoint: https://lrs.test.com/data/xAPI/
-      username: a11b8184dd0afb37b717aa236f75f532e0454a86
-      pasword: bb4b0d4b4be9dea1f9f8c48c58a5e13a4e15f48a
+#    ldap_user:
+#      endpoint: 'https://qast.test.salt.ch/data/'
+#      username: 3b5d9d1f2fc76e9cdb663f311613d5663fc694d1
+#      password: fa4a6689c00153b393905e095f44510d34138195
+#      version: '1.0.1'
     default:
-      endpoint: https://lrs.test.com/data/xAPI/
-      username: 5ac376d2c89190465001da126c5616110ff58d76
-      pasword: 89b21ef49a41283c79b8433264885866c52020d2
-verb:
+      endpoint: 'https://qast.test.salt.ch/data/xAPI'
+      username: 3b5d9d1f2fc76e9cdb663f311613d5663fc694d1
+      password: fa4a6689c00153b393905e095f44510d34138195
+      version: '1.0.3'
+## define activity tpe by template
+template_activityType:
+    default: http://activitystrea.ms/schema/1.0/page
+    # @todo replace with 
+    form: http://activitystrea.ms/schema/1.0/task 
+    listing: 'http://activitystrea.ms/schema/1.0/collection'
+template_verb:
     default: http://activitystrea.ms/schema/1.0/read
     listing: http://activitystrea.ms/schema/1.0/search
     all: http://activitystrea.ms/schema/1.0/search
     login: https://brindlewaye.com/xAPITerms/verbs/loggedin/
     report: http://id.tincanapi.com/verb/viewed
     home: http://adlnet.gov/expapi/verbs/experienced
+    form: 'http://activitystrea.ms/schema/1.0/request'
 filter:
     template:
         - login
+        - form
     taxonomies:
        category: 
        tag:
@@ -32,5 +48,3 @@ filter:
         query:
             - key: 'backend'
               value: 'tsv'            
-    
-        
