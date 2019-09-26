@@ -167,7 +167,7 @@ class GravXapiPlugin extends Plugin {
                  * normal statement
                  */
                 $verbid = isset($params['verb'])?$params['verb']:'';
-                $statement = $this->prepareStatement($params['verb'], $this->prepareExtentions($params['extensions'], $form));
+                $statement = $this->prepareStatement($verbid, $this->prepareExtentions($params['extensions'], $form));
                 
                 $response = $lrs->saveStatement($statement);
                 if ($response->success) {
