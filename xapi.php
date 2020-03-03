@@ -133,7 +133,7 @@ class XapiPlugin extends Plugin {
         if ($this->filter()) {
             if ($this->config->get('plugins.' . $this->pname . '.php.active')) {
                 $remote = $this->prepareLRS($this->user);
-                //$this->trackFromServer($remote);
+                $this->trackFromServer($remote);
             }
         }
     }
