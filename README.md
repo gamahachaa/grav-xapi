@@ -1,6 +1,6 @@
 # Xapi Plugin
 
-The **Xapi** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send XAPI (Tincan) statements to an LRS. So far this plugin only sends statements. It doesn't provide yet any LRS query.
+The **Xapi** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send [XAPI (Tincan)](https://github.com/adlnet/xAPI-Spec) statements to an LRS. So far this plugin only sends statements. It doesn't provide yet any LRS query.
 
 How does it works :
 - When a user opens a page: 

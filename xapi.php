@@ -74,6 +74,8 @@ class XapiPlugin extends Plugin {
     }
 
     //********************************************* EVENTS HANDLERS **************************************************************/
+    //********************************************* EVENTS HANDLERS **************************************************************/
+    //********************************************* EVENTS HANDLERS **************************************************************/
     /**
      * Initialize the plugin
      */
@@ -82,6 +84,10 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
+        // Check to ensure login plugin is enabled.
+        if (!$this->grav['config']->get('plugins.login.enabled')) {
+            throw new \RuntimeException('The Login plugin needs to be installed and enabled');
+        }
         //$this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
          $this->lrss = [];
          $this->activityTypes = [];
@@ -89,26 +95,22 @@ class XapiPlugin extends Plugin {
         // todo caching 
         //$this->cache = $this->grav['cache'];
         $this->pname = 'xapi';
-        // Check to ensure login plugin is enabled.
-        if (!$this->grav['config']->get('plugins.login.enabled')) {
-            throw new \RuntimeException('The Login plugin needs to be installed and enabled');
-        }
+        
         $this->user = $this->grav['user'];
         $this->actor = $this->prepareAgent($this->user);
         // SET LRS credentials based on user's group profile
     }
+     //********************************************* JS **************************************************************/
 
-    /**
-     * Set needed ressources to display and convert charts
-     */
     public function onTwigSiteVariables(Event $event) {
-        // Resources for the conversion
         if (!$this->config->get('plugins.' . $this->pname . '.js.active'))
             return;
         $this->grav['assets']->addJs('plugin://' . $this->pname . '/js/tincan-min.js');
-        //$this->grav['assets']->addInlineJs('$("#tribunehelpbtn").click(function(){alert("TRIBUNE")});', ['group' => 'bottom']);
       
     }
+    // @todo add more JS functionalities
+    
+ //********************************************* PHP **************************************************************/
 
     /**
      *
@@ -138,22 +140,7 @@ class XapiPlugin extends Plugin {
             }
         }
     }
-   
-    function mapConfigNamedCollections($configVar, &$thisVar)
-    {
-        
-        foreach( $configVar as $var )
-        {
-            $thisVar[$var['naming']] = [];
-            foreach( $var as $k=> $v)
-            {
-                if($k == 'naming') continue;
-                else{
-                    $thisVar[$var['naming']][$k] = $v;
-                }
-            }
-        }
-    }
+
     /**
      * catch plugin Form event
      * @param Event $event
@@ -186,8 +173,25 @@ class XapiPlugin extends Plugin {
         }
     }
 
-    //********************************************* PRIVATES **************************************************************/
-    //********************************************* PHP **************************************************************/
+    /*********************************************************************************************************************
+    *******************************************PRIVATES*******************************************************************
+    *********************************************************************************************************************/
+       
+    private function mapConfigNamedCollections($configVar, &$thisVar)
+    {
+        
+        foreach( $configVar as $var )
+        {
+            $thisVar[$var['naming']] = [];
+            foreach( $var as $k=> $v)
+            {
+                if($k == 'naming') continue;
+                else{
+                    $thisVar[$var['naming']][$k] = $v;
+                }
+            }
+        }
+    }
     private function trackFromServer(RemoteLRS &$lrs = null) {
         $statement = $this->prepareStatement();
         // SEND STATEMENT
@@ -354,8 +358,7 @@ class XapiPlugin extends Plugin {
         return new ActivityDefinition($desc);
     }
 
-    //********************************************* JS **************************************************************/
-    // add JS functions
+   
     //********************************************* GENERIC **************************************************************/
     /**
      * 
