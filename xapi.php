@@ -1,4 +1,5 @@
 <?php
+
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
@@ -11,13 +12,15 @@ use TinCan\ActivityDefinition;
 use TinCan\Extensions;
 use TinCan\RemoteLRS;
 use TinCan\Verb;
-use TinCan\Verbs;
 use TinCan\Statement;
+use Grav\Common\User\Interfaces\UserCollectionInterface;
+use Grav\Common\User\Interfaces\UserInterface;
+
 /**
  * Class XapiPlugin
  * @package Grav\Plugin
  */
-class GravXapiPlugin extends Plugin {
+class XapiPlugin extends Plugin {
 
     /**
      * @return array
@@ -29,23 +32,28 @@ class GravXapiPlugin extends Plugin {
      *     callable (or function) as well as the priority. The
      *     higher the number the higher the priority.
      */
-    
     protected $user;
     protected $page;
     protected $pname;
     //protected $cache; // @todo
+    //LRS array
+    protected $lrss;
+    protected $activityTypes;
+    protected $verbs;
+    
     // endpoint
     protected $endpoint;
     protected $username;
-    protected $passwd; 
+    protected $passwd;
     protected $lrs;
     // statement
     protected $verb;
     protected $actor; //TinCan\Agent
     protected $activity; //TinCan\Activity
+    
 
     public static function getSubscribedEvents() {
-       
+
         return [
             'onPageInitialized' => ['onPageInitialized', 0],
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
@@ -76,10 +84,10 @@ class GravXapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-
-        $this->cache = $this->grav['cache'];
+         $this->lrss = [];
+        // todo caching 
+        //$this->cache = $this->grav['cache'];
         $this->pname = 'grav-xapi';
-        $this->grav['debugger']->addMessage('onPluginsInitialized GravXapiPlugin');
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
@@ -87,7 +95,6 @@ class GravXapiPlugin extends Plugin {
         $this->user = $this->grav['user'];
         $this->actor = $this->prepareAgent($this->user);
         // SET LRS credentials based on user's group profile
-//        $this->prepareLRS($this->user);
     }
 
     /**
@@ -95,15 +102,11 @@ class GravXapiPlugin extends Plugin {
      */
     public function onTwigSiteVariables(Event $event) {
         // Resources for the conversion
-        if (!$this->config->get('plugins.'.$this->pname.'.js.active'))
+        if (!$this->config->get('plugins.' . $this->pname . '.js.active'))
             return;
-//        $this->grav['debugger']->addMessage($this->pname . ' use JS');
         $this->grav['assets']->addJs('plugin://' . $this->pname . '/js/tincan-min.js');
-        $this->grav['assets']->addInlineJs('$("#tribunehelpbtn").click(function(){alert("TRIBUNE")});', ['group' => 'bottom']);
-        /*
-         * window.onunload = (e) => {console.log(e);};
-         */
-        //$this->grav['assets']->addJs('plugin://grav-diagrams/js/main.min.js');
+        //$this->grav['assets']->addInlineJs('$("#tribunehelpbtn").click(function(){alert("TRIBUNE")});', ['group' => 'bottom']);
+      
     }
 
     /**
@@ -115,20 +118,40 @@ class GravXapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-        //$this->grav['debugger']->addMessage('onPluginsInitialized');
+
         if (!$this->user->authorize('site.login')) {
             return;
         }
         $this->page = $e['page'];
-//        $this->config = $this->mergeConfig($this->page);
-//        $this->grav['debugger']->addMessage('CONFIG');
-//        $this->grav['debugger']->addMessage($this->config);
+        // prepares LRSs
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.lrs'), $this->lrss );
+       // prepare templates activities
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_activityType'), $this->activityTypes );
+        // prepare temaplates verbs 
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_verb'), $this->verbs );
+        
         if ($this->filter()) {
-            if ($this->config->get('plugins.'.$this->pname.'.php.active')) {
-                $remote = $this->preparePhpLRS($this->user);
-                $this->trackPhp($remote);
+            if ($this->config->get('plugins.' . $this->pname . '.php.active')) {
+                $remote = $this->prepareLRS($this->user);
+                //$this->trackFromServer($remote);
             }
-            
+        }
+    }
+   
+    function mapConfigNamedCollections($configVar, &$thisVar)
+    {
+        foreach( $configVar as $var )
+        {
+//            $this->grav['debugger']->addMessage($var);
+            $thisVar[$var['naming']] = [];
+            foreach( $var as $k=> $v)
+            {
+//                $this->grav['debugger']->addMessage($k);
+                if($k == 'naming') continue;
+                else{
+                    $thisVar[$var['naming']][$k] = $v;
+                }
+            }
         }
     }
     /**
@@ -148,93 +171,79 @@ class GravXapiPlugin extends Plugin {
             case 'xapi':
                 $params = $event['params'];
                 $form = $event['form'];
-                // NORMAL
-//                $this->grav['debugger']->addMessage(Verbs::$reviewed);
-                $lrs = $this->preparePhpLRS($this->user);
-                
-                // TEST
-//                $lrs = new RemoteLRS(
-//                    'https://qast.test.salt.ch/data/xAPI',
-//                    '1.0.1',
-//                    '3b5d9d1f2fc76e9cdb663f311613d5663fc694d1',
-//                    'fa4a6689c00153b393905e095f44510d34138195'
-//                );
-                /**
-                 * TEST statement for debugging
-                 */
-//                $statement = $this->getTestStatement();
-                /**
-                 * normal statement
-                 */
-                $verbid = isset($params['verb'])?$params['verb']:'';
-                $statement = $this->prepareStatement($verbid, $this->prepareExtentions($params['extensions'], $form));
-                
+                $lrs = $this->prepareLRS($this->user);
+
+                $statement = $this->prepareStatement($params['verb'] ?? '', $this->prepareExtentions($params['extensions'], $form));
                 $response = $lrs->saveStatement($statement);
+                
+                //uncomment for debugging
                 if ($response->success) {
-                    $this->grav['debugger']->addMessage("Statement sent successfully!\n");
+                    //$this->grav['debugger']->addMessage("Statement sent successfully!\n");
                 } else {
-                    $this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
+                    //$this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
                 }
                 break;
-            //do what you want
         }
     }
+
     //********************************************* PRIVATES **************************************************************/
-
     //********************************************* PHP **************************************************************/
-    private function trackPhp(RemoteLRS &$lrs = null) {
-
-//        $this->grav['debugger']->addMessage($this->pname . ' use PHP');
-
+    private function trackFromServer(RemoteLRS &$lrs = null) {
         $statement = $this->prepareStatement();
-//        $this->grav['debugger']->addMessage($statement->verify());
         // SEND STATEMENT
         $response = $lrs->saveStatement($statement);
+        
         if ($response) {
-
+            //uncomment for debugging
+             /**
             $this->grav['debugger']->getCaller();
             $this->grav['debugger']->addMessage('success');
+             */
         } else {
-
+            //uncomment for debugging
+            /**
             $this->grav['debugger']->addMessage('failed');
             $this->grav['debugger']->addMessage($statement);
+             */
         }
+
     }
+
     /**
      * Get the LRS base on the config group mapping to list of LRS
      * Sets the connection to the first found matching LRS
      * @param User $u
      * @return \Tincan\RemoteLRS
      */
-    private function preparePhpLRS(User $u) {
-        $lrs_config = $this->getLRConfigFromUSer($u);
-//        $this->grav['debugger']->addMessage($lrs_config);
-        
-        $lrs = new RemoteLRS($lrs_config[0], $lrs_config[1], $lrs_config[2], $lrs_config[3]);
-//       $this->grav['debugger']->addMessage($lrs);
-       return $lrs;
+    private function prepareLRS(User $u) {
+        $lrs_config = $this->getFirstLRSConfigFromUser($u);
+
+//        $lrs = new RemoteLRS($lrs_config[0], $lrs_config[1], $lrs_config[2], $lrs_config[3]);
+        //$lrs = 
+        return new RemoteLRS($lrs_config['endpoint'], $lrs_config['version'], $lrs_config['username'], $lrs_config['password']);
     }
+
     /**
      * Get verb based on page template mapped to config list of templates/verbs
      * @param type $template
      * @return \TinCan\Verb
      * @todo statics for common used verbs with multilang desc
      */
-    protected function prepareVerb($verbID= '') {
-        if($verbID == '')
-        {
-            $id = $this->config->get('plugins.'.$this->pname.'.template_verb.default');
-            if ($this->config->get('plugins.'.$this->pname.'.template_verb.' . $this->page->template())) {
-                $id = $this->config->get('plugins.'.$this->pname.'.template_verb.' . $this->page->template());
-            }
-        }
-        else{
+    protected function prepareVerb($verbID = '') {
+        if ($verbID == '') {
+            $id = $this->verbs[$this->page->template()]??$this->verbs['default'];
+//            $id = $this->config->get('plugins.' . $this->pname . '.template_verb.default');
+//            if ($this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template())) {
+//                $id = $this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template());
+//            }
+        } else {
             $id = $verbID;
         }
         return new \TinCan\Verb([
             'id' => $id
         ]);
     }
+
     /**
      * 
      * @param User $gravUser
@@ -247,6 +256,7 @@ class GravXapiPlugin extends Plugin {
             'name' => $gravUser->login
         ]);
     }
+
     /**
      * 
      * @param type $page
@@ -260,6 +270,7 @@ class GravXapiPlugin extends Plugin {
         $object->setDefinition($this->prepareActivitytDefintionFromPage($this->page));
         return $object;
     }
+
     /**
      * 
      * @param Page $page
@@ -277,15 +288,11 @@ class GravXapiPlugin extends Plugin {
      * @param \Grav\Plugin\Grav\Common\Page\Page $page
      * @return type
      */
-    protected function prepareStatement( $verbID = '', Extensions $extensions = null)
-    {
+    protected function prepareStatement($verbID = '', Extensions $extensions = null) {
         $object = $this->prepareActivity();
         if (!is_null($extensions)) {
             $object->getDefinition()->setExtensions($extensions);
         }
-        
-        //$object->setDefinition(  );
-        // BUILD
         $statement = New Statement([
             'actor' => $this->actor,
             'verb' => $this->prepareVerb($verbID),
@@ -294,7 +301,7 @@ class GravXapiPlugin extends Plugin {
         ]);
         return $statement;
     }
-    
+
     /**
      * Tin can extensions for non result based forms
      * @param type $params
@@ -309,113 +316,106 @@ class GravXapiPlugin extends Plugin {
         ];
         $exts = [];
         $val;
-        //$this->grav['debugger']->addMessage($form['data']);
+        $key;
         foreach ($params as $k => $v) {
-//            $this->grav['debugger']->addMessage('################');
-//            $this->grav['debugger']->addMessage($k);
-//            $this->grav['debugger']->addMessage($v);
-//            
-//            
-//            $this->grav['debugger']->addMessage(strrpos($v, '{{'));
-//            $this->grav['debugger']->addMessage(strrpos($v, '}}'));
+
             $val = $form['data'][$v];
-            if (strrpos($v, '{{')>=0 && strrpos($v, '}}')>0) {
+            $key = $k;
+            // compute extension's value
+            if (strrpos($v, '{{') >= 0 && strrpos($v, '}}') > 0) {
                 // Process with Twig only if twig markup found
-                // non form values
-//                $this->grav['debugger']->addMessage('PROCESS TWIG in grav-xapi');
                 $val = $twig->processString($v, $vars);
-            } else if(is_null($val)){
+            } else if (is_null($val)) {
                 //get value from the form
                 $val = $v;
             }
-            
-             $key;
-            if (strrpos($k, "http") === 0) {
-                
-                //$exts[$k] = $val;
-                
-                $key = $k;
-            } else {
-//                $this->grav['debugger']->addMessage('ADD form URL');
+            // Compute extension id
+            if (strrpos($k, "http") !== 0) {
                 // create extension ID if not defined in the fonm
-                 //$exts[$this->grav['uri']->url . "#" . $k] = $val;
-                 $key = $this->grav['uri']->url . "#" . $k;
-                
+                $key = $this->grav['uri']->url . "#" . $k;
             }
-//            $this->grav['debugger']->addMessage('---------------');
-//             $this->grav['debugger']->addMessage($val);
-//              $this->grav['debugger']->addMessage($key);
             $exts[$key] = $val;
         }
         return new Extensions($exts);
     }
+
     /**
      * 
-     * 
      * @return ActivityDefinition
-     */ 
+     */
     private function prepareActivitytDefintionFromPage() {
         $desc = [];
-        $language = $this->page->language()?:'en';
-        
+        $language = $this->page->language() ?: 'en';
+
         $desc['name'] = [$language => $this->page->title()];
-        $desc['type'] = $this->getConfigByTemplate('template_activityType', $this->page->template());
-        if(isset($this->page->header()->metadata) && isset($this->page->header()->metadata['description']))
-        {
+        // set the activity type
+        $desc['type'] = $this->activityTypes[$this->page->template()]??$this->activityTypes['default'];
+//        $desc['type'] = $this->getConfigByTemplate('template_activityType', $this->page->template());
+        if (isset($this->page->header()->metadata) && isset($this->page->header()->metadata['description'])) {
             $desc['description'] = [$language => $this->page->header()->metadata['description']];
         }
         /**
          * @todo make definition creation flexible before publishing.
          */
-        return new ActivityDefinition( $desc );
+        return new ActivityDefinition($desc);
     }
+
     //********************************************* JS **************************************************************/
+    // add JS functions
     //********************************************* GENERIC **************************************************************/
     /**
      * 
      * @return boolean
      */
     private function filter() {
+        // DO not track modulars (does not affect pages made of collections)
+        if ($this->page->modular())
+            return false;
+       // $this->grav['debugger']->addMessage('grav xapi filter');
+        //$users = $this->grav['accounts'];
+        
         // do not track routes and uri queries
-        //$this->grav['debugger']->addMessage($this->config);
-        if ($this->config->get('plugins.'.$this->pname.'.filter.uri')) {
+        // Do not track a certain page based on its template
+
+        if ($this->config->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->config->get('plugins.' . $this->pname . '.filter.template')))
+            return false;
+        $this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());
+        if ($this->config->get('plugins.' . $this->pname . '.filter.uri')) {
             $uri = $this->grav['uri'];
+
             /**
              * @todo add wild cards
              */
             // routes
-            if ($this->config->get('plugins.'.$this->pname.'.filter.uri.routes')) {
-                $filtered_routes = $this->config->get('plugins.'.$this->pname.'.filter.uri.routes');
+            if ($this->config->get('plugins.' . $this->pname . '.filter.uri.routes')) {
+                $filtered_routes = $this->config->get('plugins.' . $this->pname . '.filter.uri.routes');
                 foreach ($filtered_routes as $v) {
                     if ($uri->route() === $v)
                         return false;
                 }
             }
+            //$this->grav['debugger']->addMessage('uri.routes not filtererd : '.$uri->route());
             // queries
-            if ($this->config->get('plugins.'.$this->pname.'.filter.uri.query')) {
-                $filtered_queries = $this->config->get('plugins.'.$this->pname.'.filter.uri.query');
+            if ($this->config->get('plugins.' . $this->pname . '.filter.uri.query')) {
+                $filtered_queries = $this->config->get('plugins.' . $this->pname . '.filter.uri.query');
                 foreach ($filtered_queries as $v) {
                     if ($uri->query($v['key']) === $v['value'])
                         return false;
+                    //$this->grav['debugger']->addMessage('uri.query not filtererd : '.$uri->query($v['key']));
                 }
             }
         }
-        // DO not track modulars (does not affect pages made of collections)
-        if ($this->page->modular())
-            return false;
-
-        // Do not track a certain page based on its tempoale
-        if ($this->config->get('plugins.'.$this->pname.'.filter.template') && in_array($this->page->template(), $this->config->get('plugins.'.$this->pname.'.filter.template')))
-            return false;
+        
         // Do not track users
-        if ($this->config->get('plugins.'.$this->pname.'.filter.users') && in_array($this->user->login, $this->config->get('plugins.'.$this->pname.'.filter.users'))) {
+        if ($this->config->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->config->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
+        //$this->grav['debugger']->addMessage('users not filtererd : ' . $this->user->login);
         // Do not track users if they belong to a certain group
-        if ($this->config->get('plugins.'.$this->pname.'.filter.groups')) {
+        if ($this->config->get('plugins.' . $this->pname . '.filter.groups')) {
             if (isset($this->user->groups)) {
                 foreach ($this->user->groups as $g) {
-                    if (in_array($g, $this->config->get('plugins.'.$this->pname.'.filter.groups'))) {
+                    if (in_array($g, $this->config->get('plugins.' . $this->pname . '.filter.groups'))) {
                         return false;
                     }
                 }
@@ -425,7 +425,7 @@ class GravXapiPlugin extends Plugin {
         $sysTaxo = $this->grav['config']->get('site.taxonomies');
         $pageTaxo = $this->page->taxonomy();
         foreach ($sysTaxo as $t) {
-            $filterTaxo = $this->config->get('plugins.'.$this->pname.'.filter.taxonomies.' . $t);
+            $filterTaxo = $this->config->get('plugins.' . $this->pname . '.filter.taxonomies.' . $t);
             if (isset($filterTaxo) && isset($pageTaxo[$t])) {
                 foreach ($filterTaxo as $ft) {
                     if (in_array($ft, $pageTaxo[$t])) {
@@ -437,67 +437,68 @@ class GravXapiPlugin extends Plugin {
 
         return true;
     }
+
     /**
-     * 
+     * Look in the user's group list if an LRS was defined for it and return firt found
      * @param User $u
      * @return Array
      */
-    private function getLRConfigFromUSer(User $u)
-    {
-        $lrs = 'default';
+    private function getFirstLRSConfigFromUser(User $u) {
+        //$lrs = 'default';
         if (isset($u->groups)) {
             foreach ($u->groups as $g) {
-                if ($this->config->get('plugins.'.$this->pname.'.lrs.' . $g)) {
-                    $lrs = $g;
-                    break;
+//                if ($this->config->get('plugins.' . $this->pname . '.lrs.' . $g)) {
+                if (isset($this->lrss[$g])) {
+//                    $lrs = $g;
+                    return $this->lrss[$g];
                 }
             }
         }
-        return $this->getLrsConfig($lrs);
+        return $this->lrss['default'];
+//        return $this->getLRSConfig($lrs);
     }
+
     /**
      * Get the LRS connection details based on the chosen LRS
      * @param type $lrs
      * @return type
      */
-    private function getLrsConfig($lrs) {
-//        $this->grav['debugger']->addMessage($lrs);
-//        $this->grav['debugger']->addMessage($this->config);
-//        $this->grav['debugger']->addMessage($this->config->get('plugins.'.$this->pname.'.lrs'));
-//        $this->grav['debugger']->addMessage($this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.endpoint'));
-//        $this->grav['debugger']->addMessage($this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.version'));
-//        $this->grav['debugger']->addMessage($this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.username'));
-//        $this->grav['debugger']->addMessage($this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.password'));
+//    private function getLRSConfig($lrs) {
+//
+//        return [
+//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.endpoint'),
+//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.version'),
+//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.username'),
+//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.password')
+//        ];
+//    }
 
-        return [
-            $this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.endpoint'),
-            $this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.version'), 
-            $this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.username'), 
-            $this->config->get('plugins.'.$this->pname.'.lrs.' . $lrs . '.password')
-            ];
-    }
+//    function getConfigByTemplate($config, $template) {
+//        $tmp = $this->config->get($config . '.' . $template);
+//        return is_null($tmp) ? $this->config->get($config . '.default') : $tmp;
+//    }
 
-    
-
-    function getConfigByTemplate($config, $template) {
-        $tmp = $this->config->get($config . '.' . $template);
-        return is_null($tmp) ? $this->config->get($config . '.default') : $tmp;
-    }
 /////////////////////////////////////////////////////////// DUMMY  ///////////////////////////////////////////////////
-    function getTestStatement()
-    {
+    function getTestStatement() {
         return [
-        'actor' => [
-            'mbox' => 'test@salt.ch',
-        ],
-        'verb' => [
-            'id' => 'http://adlnet.gov/expapi/verbs/experienced',
-        ],
-        'object' => [
-            'id' => 'http://rusticisoftware.github.com/TinCanPHP',
-        ],
-    ];
+            'actor' => [
+                'mbox' => 'test@test.com',
+            ],
+            'verb' => [
+                'id' => 'http://adlnet.gov/expapi/verbs/experienced',
+            ],
+            'object' => [
+                'id' => 'http://rusticisoftware.github.com/TinCanPHP',
+            ],
+        ];
     }
-    
+    /**
+     * @todo add 
+     */
+    function getTestLRS() {
+        new RemoteLRS(
+                'https://cloud.scorm.com/lrs/XXXXXXXXX', '1.0.1', 'username', 'pwd'
+        );
+    }
 
 }

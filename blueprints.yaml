@@ -3,12 +3,12 @@ version: 0.3.0
 description: Add to grav LRS connectivity and basic page activity statements tracking. Turns your favorite grav app into an Learning Management System.
 icon: graduation-cap
 author:
-  name: Bruno Baudry
-  email: bbaudry@gmail.com
+  name: Gamahachaa
+  email: gamahachaa@gmail.com
 homepage: https://github.com/gamahachaa/grav-xapi
 keywords: grav, plugin, xapi, e-learning, knowledge management, LRS, LMS
 bugs: https://github.com/gamahachaa/grav-xapi/issues
-docs: https://github.com/gamahachaa/grav-xapi/blob/develop/README.md
+docs: https://github.com/gamahachaa/grav-xapi/blob/master/README.md
 license: Apache 2.0
 form:
   validation: strict
@@ -23,12 +23,113 @@ form:
         0: PLUGIN_ADMIN.DISABLED
       validate:
         type: bool
-    text_var:
-      type: text
-      label: PLUGIN_XAPI.TEXT_VARIABLE
-      help: PLUGIN_XAPI.TEXT_VARIABLE_HELP
+    php.active:
+      type: toggle
+      label: PLUGIN_XAPI.ENABLE_PHP
+      highlight: 1
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
+    js.active:
+      type: toggle
+      label: PLUGIN_XAPI.ENABLE_JS
+      highlight: 1
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
     lrs:
-        type: textarea
-        label: PLUGIN_XAPI.LRS_VAR
-        help: PLUGIN_XAPI.LRS_VAR_HELP
-        
+        type: list
+        style: vertical
+        label: "list of LRSs"
+        fields:
+            .naming:
+                type: text
+                label: Name (to be mapped to user's group)
+            .endpoint:
+                type: text
+                label: Endpoint (LRS's url)
+            .username:
+                type: text
+                label: Username (LRS's username)         
+            .password:
+                type: text
+                label: Password (LRS's password)                         
+            .version:
+                type: text
+                label: Version (LRS's version)    
+                
+    template_activityType:
+        type: list
+        style: vertical
+        label: "Activity types vs template"
+        fields: 
+            .naming:
+                type: text
+                label: Template (to be mapped to an ActivityType)
+            .activityIRI:
+                type: text
+                label: ActivityType IRI (custom or from the registry https://registry.tincanapi.com/)  
+    template_verb:
+        type: list
+        style: vertical
+        label: "Verbs vs template"
+        fields: 
+            .naming:
+                type: text
+                label: Template (to be mapped to a Verb)
+            .verbIRI:
+                type: text
+                label: Verb IRI (custom or from the registry https://registry.tincanapi.com/#home/verbs)          
+    filter:
+        type: fieldset
+        title: Filters
+        help: "Add one item per line starting with an hyphen '-'"
+        info: "all items listed bellow will not trigger xapi statements"
+        icon: filter
+        collapsed: true      # Initial state of fieldset (see collapsible option)
+        collapsible: true    # Whether one can expand the fieldset or not
+        fields:
+            filter.template:
+                type: array
+                label: "Do not track these templates"
+                value_only: true
+            filter.taxonomies:
+                type: taxonomy
+                label: Taxonomy filter
+                multiple: true
+                validate:
+                  type: array
+            filter.users:
+                type: array
+                label: "Do not track these users"
+                title: TITLE
+                value_only: true
+            filter.groups:
+                type: array
+                label: "Do not track users if they belong to these groups"
+                value_only: true
+            uri:
+                type: fieldset
+                title: URL Filters (routes and queries)
+                fields:
+                   filter.uri.routes:
+                        type: array
+                        label: Routes that would not trigger statements
+                        value_only: true
+                   filter.uri.query:
+                        type: list
+                        label: Url queries that would not trigger statements
+                        style: horizontal
+                        fields:
+                            .key:
+                                type: text
+                                label: key
+                            .value:
+                                type: text
+                                label: value       

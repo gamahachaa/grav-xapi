@@ -1,0 +1,36 @@
+enabled: true
+php:
+  active: true
+js:
+  active: false
+lrs:
+    -
+        naming: default
+        endpoint: 'https://mylrs/data/xAPI'
+        username: 3b5d9d1f2fc76e9cdb663f311613d5663fc694d1
+        password: fa4a6689c00153b393905e095f44510d34138195
+        version: "1.0.1"
+template_activityType:
+    -
+        naming: default
+        activityIRI: 'http://activitystrea.ms/schema/1.0/page'
+template_verb:
+    -
+        naming: default
+        verbIRI: 'http://activitystrea.ms/schema/1.0/read'
+
+filter:
+  template:
+    - login
+  taxonomies:
+    category:
+      - reporting
+  users:
+    - jdoe
+  groups:
+    - management
+  uri:
+    query:
+        -
+            key: search
+            value: test
