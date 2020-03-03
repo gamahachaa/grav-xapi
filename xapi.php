@@ -237,7 +237,8 @@ class XapiPlugin extends Plugin {
      */
     protected function prepareVerb($verbID = '') {
         if ($verbID == '') {
-            $id = $this->verbs[$this->page->template()]??$this->verbs['default'];
+            $verbID = 
+            $id = $this->verbs[$this->page->template()]['verbIRI']??$this->verbs['default']['verbIRI'];
 //            $id = $this->config->get('plugins.' . $this->pname . '.template_verb.default');
 //            if ($this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template())) {
 //                $id = $this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template());
@@ -355,7 +356,7 @@ class XapiPlugin extends Plugin {
 
         $desc['name'] = [$language => $this->page->title()];
         // set the activity type
-        $desc['type'] = $this->activityTypes[$this->page->template()]??$this->activityTypes['default'];
+        $desc['type'] = $this->activityTypes[$this->page->template()]['activityIRI']??$this->activityTypes['default']['activityIRI'];
 //        $desc['type'] = $this->getConfigByTemplate('template_activityType', $this->page->template());
         if (isset($this->page->header()->metadata) && isset($this->page->header()->metadata['description'])) {
             $desc['description'] = [$language => $this->page->header()->metadata['description']];
