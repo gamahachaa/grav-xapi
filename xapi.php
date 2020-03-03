@@ -13,8 +13,6 @@ use TinCan\Extensions;
 use TinCan\RemoteLRS;
 use TinCan\Verb;
 use TinCan\Statement;
-use Grav\Common\User\Interfaces\UserCollectionInterface;
-use Grav\Common\User\Interfaces\UserInterface;
 
 /**
  * Class XapiPlugin
@@ -84,7 +82,7 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-        $this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
+        //$this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
          $this->lrss = [];
          $this->activityTypes = [];
          $this->verbs = [];
@@ -121,7 +119,7 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-         $this->grav['debugger']->addMessage("XAPI onPageInitialized");
+         //$this->grav['debugger']->addMessage("XAPI onPageInitialized");
         if (!$this->user->authorize('site.login')) {
             return;
         }
@@ -143,15 +141,12 @@ class XapiPlugin extends Plugin {
    
     function mapConfigNamedCollections($configVar, &$thisVar)
     {
-        $this->grav['debugger']->addMessage($configVar);
-        $this->grav['debugger']->addMessage($thisVar);
+        
         foreach( $configVar as $var )
         {
-//            $this->grav['debugger']->addMessage($var);
             $thisVar[$var['naming']] = [];
             foreach( $var as $k=> $v)
             {
-//                $this->grav['debugger']->addMessage($k);
                 if($k == 'naming') continue;
                 else{
                     $thisVar[$var['naming']][$k] = $v;
@@ -183,9 +178,9 @@ class XapiPlugin extends Plugin {
                 
                 //uncomment for debugging
                 if ($response->success) {
-                    $this->grav['debugger']->addMessage("Statement sent successfully!\n");
+                    //$this->grav['debugger']->addMessage("Statement sent successfully!\n");
                 } else {
-                    $this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
+                    //$this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
                 }
                 break;
         }
@@ -200,17 +195,17 @@ class XapiPlugin extends Plugin {
         
         if ($response) {
             //uncomment for debugging
-             /***/
+             /***
             $this->grav['debugger']->getCaller();
             $this->grav['debugger']->addMessage('trackFromServer success');
             $this->grav['debugger']->addMessage($statement);
-             /**/
+             **/
         } else {
             //uncomment for debugging
-            /***/
+            /***
             $this->grav['debugger']->addMessage('trackFromServer failed');
             $this->grav['debugger']->addMessage($statement);
-            /* */
+            * */
         }
 
     }
@@ -223,9 +218,6 @@ class XapiPlugin extends Plugin {
      */
     private function prepareLRS(User $u) {
         $lrs_config = $this->getFirstLRSConfigFromUser($u);
-
-//        $lrs = new RemoteLRS($lrs_config[0], $lrs_config[1], $lrs_config[2], $lrs_config[3]);
-        //$lrs = 
         return new RemoteLRS($lrs_config['endpoint'], $lrs_config['version'], $lrs_config['username'], $lrs_config['password']);
     }
 
@@ -236,13 +228,9 @@ class XapiPlugin extends Plugin {
      * @todo statics for common used verbs with multilang desc
      */
     protected function prepareVerb($verbID = '') {
-        if ($verbID == '') {
-            $verbID = 
+        if ($verbID == '') 
+        {
             $id = $this->verbs[$this->page->template()]['verbIRI']??$this->verbs['default']['verbIRI'];
-//            $id = $this->config->get('plugins.' . $this->pname . '.template_verb.default');
-//            if ($this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template())) {
-//                $id = $this->config->get('plugins.' . $this->pname . '.template_verb.' . $this->page->template());
-//            }
         } else {
             $id = $verbID;
         }
@@ -357,7 +345,6 @@ class XapiPlugin extends Plugin {
         $desc['name'] = [$language => $this->page->title()];
         // set the activity type
         $desc['type'] = $this->activityTypes[$this->page->template()]['activityIRI']??$this->activityTypes['default']['activityIRI'];
-//        $desc['type'] = $this->getConfigByTemplate('template_activityType', $this->page->template());
         if (isset($this->page->header()->metadata) && isset($this->page->header()->metadata['description'])) {
             $desc['description'] = [$language => $this->page->header()->metadata['description']];
         }
@@ -379,14 +366,13 @@ class XapiPlugin extends Plugin {
         if ($this->page->modular())
             return false;
        // $this->grav['debugger']->addMessage('grav xapi filter');
-        //$users = $this->grav['accounts'];
         
         // do not track routes and uri queries
         // Do not track a certain page based on its template
 
         if ($this->config->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->config->get('plugins.' . $this->pname . '.filter.template')))
             return false;
-        $this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());
+        //$this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());
         if ($this->config->get('plugins.' . $this->pname . '.filter.uri')) {
             $uri = $this->grav['uri'];
 
@@ -451,39 +437,16 @@ class XapiPlugin extends Plugin {
      * @return Array
      */
     private function getFirstLRSConfigFromUser(User $u) {
-        //$lrs = 'default';
         if (isset($u->groups)) {
             foreach ($u->groups as $g) {
-//                if ($this->config->get('plugins.' . $this->pname . '.lrs.' . $g)) {
                 if (isset($this->lrss[$g])) {
-//                    $lrs = $g;
                     return $this->lrss[$g];
                 }
             }
         }
         return $this->lrss['default'];
-//        return $this->getLRSConfig($lrs);
     }
 
-    /**
-     * Get the LRS connection details based on the chosen LRS
-     * @param type $lrs
-     * @return type
-     */
-//    private function getLRSConfig($lrs) {
-//
-//        return [
-//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.endpoint'),
-//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.version'),
-//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.username'),
-//            $this->config->get('plugins.' . $this->pname . '.lrs.' . $lrs . '.password')
-//        ];
-//    }
-
-//    function getConfigByTemplate($config, $template) {
-//        $tmp = $this->config->get($config . '.' . $template);
-//        return is_null($tmp) ? $this->config->get($config . '.default') : $tmp;
-//    }
 
 /////////////////////////////////////////////////////////// DUMMY  ///////////////////////////////////////////////////
     function getTestStatement() {
@@ -499,9 +462,6 @@ class XapiPlugin extends Plugin {
             ],
         ];
     }
-    /**
-     * @todo add 
-     */
     function getTestLRS() {
         new RemoteLRS(
                 'https://cloud.scorm.com/lrs/XXXXXXXXX', '1.0.1', 'username', 'pwd'
