@@ -97,6 +97,7 @@ class XapiPlugin extends Plugin {
         $this->pname = 'xapi';
         
         $this->user = $this->grav['user'];
+        $this->grav['debugger']->addMessage($this->grav['user']);
         $this->actor = $this->prepareAgent($this->user);
         // SET LRS credentials based on user's group profile
     }
@@ -252,7 +253,7 @@ class XapiPlugin extends Plugin {
     private function prepareAgent(User $gravUser) {
         return new Agent([
             'mbox' => 'mailto:' . $gravUser->email,
-            'name' => $gravUser->login
+            'name' => $gravUser->username
         ]);
     }
 
