@@ -86,9 +86,11 @@ class XapiPlugin extends Plugin {
         }
         $this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
          $this->lrss = [];
+         $this->activityTypes = [];
+         $this->verbs = [];
         // todo caching 
         //$this->cache = $this->grav['cache'];
-        $this->pname = 'grav-xapi';
+        $this->pname = 'xapi';
         // Check to ensure login plugin is enabled.
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
@@ -141,6 +143,8 @@ class XapiPlugin extends Plugin {
    
     function mapConfigNamedCollections($configVar, &$thisVar)
     {
+        $this->grav['debugger']->addMessage($configVar);
+        $this->grav['debugger']->addMessage($thisVar);
         foreach( $configVar as $var )
         {
 //            $this->grav['debugger']->addMessage($var);
