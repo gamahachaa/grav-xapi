@@ -203,6 +203,7 @@ class XapiPlugin extends Plugin {
              /***/
             $this->grav['debugger']->getCaller();
             $this->grav['debugger']->addMessage('trackFromServer success');
+            $this->grav['debugger']->addMessage($statement);
              /**/
         } else {
             //uncomment for debugging
