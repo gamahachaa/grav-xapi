@@ -84,6 +84,7 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
+        $this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
          $this->lrss = [];
         // todo caching 
         //$this->cache = $this->grav['cache'];
@@ -118,7 +119,7 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-
+         $this->grav['debugger']->addMessage("XAPI onPageInitialized");
         if (!$this->user->authorize('site.login')) {
             return;
         }
@@ -178,9 +179,9 @@ class XapiPlugin extends Plugin {
                 
                 //uncomment for debugging
                 if ($response->success) {
-                    //$this->grav['debugger']->addMessage("Statement sent successfully!\n");
+                    $this->grav['debugger']->addMessage("Statement sent successfully!\n");
                 } else {
-                    //$this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
+                    $this->grav['debugger']->addMessage("Error statement not sent: " . $response->content . "\n");
                 }
                 break;
         }
@@ -195,16 +196,16 @@ class XapiPlugin extends Plugin {
         
         if ($response) {
             //uncomment for debugging
-             /**
+             /***/
             $this->grav['debugger']->getCaller();
-            $this->grav['debugger']->addMessage('success');
-             */
+            $this->grav['debugger']->addMessage('trackFromServer success');
+             /**/
         } else {
             //uncomment for debugging
-            /**
-            $this->grav['debugger']->addMessage('failed');
+            /***/
+            $this->grav['debugger']->addMessage('trackFromServer failed');
             $this->grav['debugger']->addMessage($statement);
-             */
+            /* */
         }
 
     }
