@@ -209,23 +209,19 @@ filter:
 
 ### Forms
 
-Just add in your form's process definition form processing result to match a [xapi extension](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#miscext)
+Just add in your form's process definition (frontmatter) the form's results to match a [xapi extension](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#miscext)
 
 ```yaml
     process:
         xapi:
             extensions:
-                _id: "{{ grav.user.username }}{{now|date('HisDdMy') }}"
-                sourceFiles: sourceFiles
-                totalWords: totalWords
-                targetLangs: targetLangs
-                http://id.tincanapi.com/extension/purpose: todo
-                targetDocType: targetDocType
-                http://id.tincanapi.com/extension/date: deadline
-                http://id.tincanapi.com/extension/severity: criticality
-                comments: comments
-                sourceLang: sourceLang
-                onbehalf: '{{ (form.value.onbehalf == "Myself" or form.value.onbehalf is null)? grav.user.email : form.value.onbehalf~"@salt.ch"|raw}}'
+                _id: "{{ grav.user.username }}{{now|date('HisDdMy') }}" #twig computed expl
+                http://id.tincanapi.com/extension/purpose: todo-form-field
+                targetDocType: targetDocType-form-field
+                http://id.tincanapi.com/extension/date: deadline-form-field
+                http://id.tincanapi.com/extension/severity: criticality-form-field
+                comments: comments-form-field
+                sourceLang: sourceLang-form-field
 ```
 
 

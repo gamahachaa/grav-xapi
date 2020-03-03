@@ -1,6 +1,6 @@
 name: Grav-Xapi
 version: 0.3.0
-description: Add to grav LRS connectivity and basic page activity statements tracking. Turns your favorite grav app into an Learning Management System.
+description: Add to grav LRS connectivity and basic page activity statements tracking. Turns your favorite grav app into an simple Learning Management System.
 icon: graduation-cap
 author:
   name: Gamahachaa
@@ -46,85 +46,84 @@ form:
     lrs:
         type: list
         style: vertical
-        label: "list of LRSs"
+        label: PLUGIN_XAPI.LRS.LIST
         fields:
             .naming:
                 type: text
-                label: Name (to be mapped to user's group)
+                label: PLUGIN_XAPI.LRS.FIELDS.NAMING
             .endpoint:
                 type: text
-                label: Endpoint (LRS's url)
+                label: PLUGIN_XAPI.LRS.FIELDS.ENDPOINT
             .username:
                 type: text
-                label: Username (LRS's username)         
+                label: PLUGIN_XAPI.LRS.FIELDS.USERNAME
             .password:
                 type: text
-                label: Password (LRS's password)                         
+                label: PLUGIN_XAPI.LRS.FIELDS.PASSWORD     
             .version:
                 type: text
-                label: Version (LRS's version)    
+                label: PLUGIN_XAPI.LRS.FIELDS.VERSION
                 
     template_activityType:
         type: list
         style: vertical
-        label: "Activity types vs template"
+        label: PLUGIN_XAPI.TEMPLATES.ACTIVITYTYPE.MAIN
         fields: 
             .naming:
                 type: text
-                label: Template (to be mapped to an ActivityType)
+                label: PLUGIN_XAPI.TEMPLATES.ACTIVITYTYPE.NAMING
             .activityIRI:
                 type: text
-                label: ActivityType IRI (custom or from the registry https://registry.tincanapi.com/)  
+                label: PLUGIN_XAPI.TEMPLATES.ACTIVITYTYPE.IRI
     template_verb:
         type: list
         style: vertical
-        label: "Verbs vs template"
+        label: PLUGIN_XAPI.TEMPLATES.VERB.MAIN
         fields: 
             .naming:
                 type: text
-                label: Template (to be mapped to a Verb)
+                label: PLUGIN_XAPI.TEMPLATES.VERB.NAMING
             .verbIRI:
                 type: text
-                label: Verb IRI (custom or from the registry https://registry.tincanapi.com/#home/verbs)          
+                label: PLUGIN_XAPI.TEMPLATES.VERB.IRI         
     filter:
         type: fieldset
-        title: Filters
-        help: "Add one item per line starting with an hyphen '-'"
-        info: "all items listed bellow will not trigger xapi statements"
+        title: PLUGIN_XAPI.FILTER.TITLE
+        info: PLUGIN_XAPI.FILTER.INFO
         icon: filter
         collapsed: true      # Initial state of fieldset (see collapsible option)
         collapsible: true    # Whether one can expand the fieldset or not
         fields:
             filter.template:
                 type: array
-                label: "Do not track these templates"
+                label: PLUGIN_XAPI.FILTER.TEMPLATE
                 value_only: true
             filter.taxonomies:
                 type: taxonomy
-                label: Taxonomy filter
+                label: PLUGIN_XAPI.FILTER.TAXO
                 multiple: true
                 validate:
                   type: array
             filter.users:
                 type: array
-                label: "Do not track these users"
+                label: PLUGIN_XAPI.FILTER.USERS
                 title: TITLE
                 value_only: true
             filter.groups:
                 type: array
-                label: "Do not track users if they belong to these groups"
+                label: PLUGIN_XAPI.FILTER.GROUPS
                 value_only: true
             uri:
                 type: fieldset
-                title: URL Filters (routes and queries)
+                title: PLUGIN_XAPI.FILTER.URI.TITLE
                 fields:
                    filter.uri.routes:
                         type: array
-                        label: Routes that would not trigger statements
+                        label: PLUGIN_XAPI.FILTER.URI.ROUTES
                         value_only: true
                    filter.uri.query:
                         type: list
-                        label: Url queries that would not trigger statements
+                        label: PLUGIN_XAPI.FILTER.URI.QUERY
                         style: horizontal
                         fields:
                             .key:
