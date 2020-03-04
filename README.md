@@ -1,6 +1,6 @@
 # xAPI Plugin
 
-The **xAPI** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send [XAPI (Tincan)](https://github.com/adlnet/xAPI-Spec) statements to an LRS. So far this plugin only sends statements for storage. It doesn't provide yet any LRS query.
+The **xAPI** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send [xAPI (Tincan)](https://adlnet.gov/projects/xapi/) [statements](https://drive.google.com/file/d/0BxhK5TH2EsphZFBXeVNnSGozWEE/view) to an [LRS](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-About.md#def-learning-record-store). So far this plugin only sends statements for storage. It doesn't provide yet any LRS query.
 
 How does it works :
 - When a user opens a page: 
@@ -32,11 +32,10 @@ You should now have all the plugin files under
 
     /your/site/grav/user/plugins/xapi
 	
-> NOTE: This plugin is a modular component for Grav which requires 
+> NOTE: This plugin is a modular component for Grav which requires the following to operate :
 - [Grav](http://github.com/getgrav/grav) 
 - [Login](https://github.com/getgrav/grav-plugin-login)
 - [Form](https://github.com/getgrav/grav-plugin-form) (when triggering statements with [forms](#forms))
-to operate.
 
 ### Admin Plugin
 
