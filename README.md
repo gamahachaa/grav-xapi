@@ -1,19 +1,20 @@
-# Xapi Plugin
+# xAPI Plugin
 
-The **Xapi** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send [XAPI (Tincan)](https://github.com/adlnet/xAPI-Spec) statements to an LRS. So far this plugin only sends statements. It doesn't provide yet any LRS query.
+The **xAPI** Plugin is for [Grav CMS](http://github.com/getgrav/grav) to send [XAPI (Tincan)](https://github.com/adlnet/xAPI-Spec) statements to an LRS. So far this plugin only sends statements for storage. It doesn't provide yet any LRS query.
 
 How does it works :
 - When a user opens a page: 
   a [statement](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-About.md#def-statement) is sent to the LRS. You can map a group of users to different LRS. You can map the page template to [verbs](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#verb) and/or [activityTypes](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#2441-when-the-objecttype-is-activity)
 - When a from is submited:
-  You can add a xapi process to a form so that its submission triggers a statement.
+  You can add a xAPI process to a form so that its submission triggers a statement.
 
 - You can add js script to your pages/templates to configure trigger special statements.
-  _Nothing more is configured for tincanjs yet. Opened toproposals_
+  
+*There would be a lot of work to take full advantage of the specifications. So feel free to comment, raising issues, or to submit PRs*
 
 ## Installation
 
-Installing the Xapi plugin can be done in one of two ways. The GPM (Grav Package Manager) installation method enables you to quickly and easily install the plugin with a simple terminal command, while the manual method enables you to do so via a zip file.
+Installing the xAPI plugin can be done in one of two ways. The GPM (Grav Package Manager) installation method enables you to quickly and easily install the plugin with a simple terminal command, while the manual method enables you to do so via a zip file.
 
 ### GPM Installation (Preferred)
 
@@ -21,7 +22,7 @@ The simplest way to install this plugin is via the [Grav Package Manager (GPM)](
 
     bin/gpm install xapi
 
-This will install the Xapi plugin into your `/user/plugins` directory within Grav. Its files can be found under `/your/site/grav/user/plugins/xapi`.
+This will install the xAPI plugin into your `/user/plugins` directory within Grav. Its files can be found under `/your/site/grav/user/plugins/xapi`.
 
 ### Manual Installation
 
@@ -33,9 +34,8 @@ You should now have all the plugin files under
 	
 > NOTE: This plugin is a modular component for Grav which requires 
 - [Grav](http://github.com/getgrav/grav) 
-- [Error](https://github.com/getgrav/grav-plugin-error) 
-- [Problems](https://github.com/getgrav/grav-plugin-problems) 
 - [Login](https://github.com/getgrav/grav-plugin-login)
+- [Form](https://github.com/getgrav/grav-plugin-form) (when triggering statements with [forms](#forms))
 to operate.
 
 ### Admin Plugin
@@ -97,30 +97,32 @@ Note that if you use the admin plugin, a file with your configuration, and named
 
 ### Activity / Object
 
-[Xapi object](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#object)
+[xAPI object](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#object)
 The statement's object is defined by the page's route.
-_ nothing configurable yet but opened to any proposal_
+
+*nothing configurable, make a proposal should you need it to*
 
 ### Context 
 
-[xapi context](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#context)
+[xAPI context](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#context)
 Is defined by the site's title and the current language.
 
-_ nothing configurable yet but opened to any proposal_
+*nothing configurable, make a proposal should you need it to*
 
 ### JS
 
-Activating the tincan js will add the [minified TinCanJS library](http://rusticisoftware.github.io/TinCanJS/)to the page html head, then up to you to configre and trigger the statememnts.
+Activating the tincan js will add the [minified TinCanJS library](http://rusticisoftware.github.io/TinCanJS/) to the page html head, then up to you to configre and trigger the statememnts.
 
 ### lrs
 
 A sequence of 
-- **Naming** As [group](https://learn.getgrav.org/16/advanced/groups-and-permissions) Naming to a group so that when set to 
-- **endpoint** [see xapi doc](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-About.md#def-endpoint)
-- Credentials to connect to it 
+- **naming**
+  An identifier for an LRS to bemapped to a grav user's [group](https://learn.getgrav.org/16/advanced/groups-and-permissions). (user belonging to a group matching the name of the LRS will have their statements sent to that LRS)
+- **endpoint** [see xAPI doc](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-About.md#def-endpoint)
+- **Credentials** to connect to the LRS 
 	- username
 	- password
-- **version** (the LRS's xapi version)
+- **version** (the LRS's xAPI version)
 
 A **default** setup is mandatory.
 You can add as many LRS as you want
@@ -141,7 +143,7 @@ lrs:
       version: "1.0.1"      
 ```
 
-So if a user has group 'new_starter0 statements will be sent to that LRS else to the default one.
+So if a user has group 'new_starters' statements will be sent to that LRS, else to the 'default' one.
 
 ### template_verb
 
@@ -209,7 +211,7 @@ filter:
 
 ### Forms
 
-Just add in your form's process definition (frontmatter) the form's results to match a [xapi extension](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#miscext)
+Just add in your form's process definition (frontmatter) the form's results to match a [xAPI extension](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#miscext)
 
 ```yaml
     process:
