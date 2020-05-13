@@ -13,6 +13,7 @@ use TinCan\Extensions;
 use TinCan\RemoteLRS;
 use TinCan\Verb;
 use TinCan\Statement;
+//use Grav\Plugin\XapiPlugin\Verbs;
 
 /**
  * Class XapiPlugin
@@ -233,14 +234,23 @@ class XapiPlugin extends Plugin {
      * @todo statics for common used verbs with multilang desc
      */
     protected function prepareVerb($verbID = '') {
+        $this->grav['debugger']->addMessage('grav xapi prepareVerb');
         if ($verbID == '') 
         {
             $id = $this->verbs[$this->page->template()]['verbIRI']??$this->verbs['default']['verbIRI'];
         } else {
             $id = $verbID;
         }
+        
+        $id_array = explode('/',$id);
+        // make sure verb uri doesnt finish with 
+        $endisplay = end($id_array)==""?prev($id_array):end($id_array);
+        //echo $page = end($link_array);
         return new \TinCan\Verb([
-            'id' => $id
+            'id' => $id,
+            'display' => [
+                'en-US' => $endisplay
+            ]
         ]);
     }
 
@@ -284,7 +294,7 @@ class XapiPlugin extends Plugin {
     }
 
     /**
-     * Send statement to LRS
+     * Prepare statement to LRS
      * @param \Grav\Plugin\Grav\Common\Page\Page $page
      * @return type
      */
