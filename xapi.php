@@ -262,8 +262,8 @@ class XapiPlugin extends Plugin {
      */
     private function prepareAgent(User $gravUser) {
         return new Agent([
-            'mbox' => 'mailto:' . $gravUser->email,
-            'name' => $gravUser->username
+            'mbox' => 'mailto:' . strtolower($gravUser->email),
+            'name' => strtolower($gravUser->username)
         ]);
     }
 
@@ -272,7 +272,8 @@ class XapiPlugin extends Plugin {
      * @param type $page
      * @return Activity
      */
-    private function prepareActivity() {
+    private function prepareActivity() 
+    {
         $object = new \TinCan\Activity();
         $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
         $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
@@ -406,7 +407,11 @@ class XapiPlugin extends Plugin {
             if ($this->config->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->config->get('plugins.' . $this->pname . '.filter.uri.query');
                 foreach ($filtered_queries as $v) {
-                    if ($uri->query($v['key']) === $v['value'])
+                    if($v['value']=='' )
+                    {
+                        return false;
+                    }
+                    else if ($uri->query($v['key']) === $v['value'])
                         return false;
                     //$this->grav['debugger']->addMessage('uri.query not filtererd : '.$uri->query($v['key']));
                 }

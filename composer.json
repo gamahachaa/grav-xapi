@@ -1,5 +1,10 @@
 {
     "require": {
         "rusticisoftware/tincan": "@stable"
+    },
+  "autoload": {
+    "psr-4": {
+      "Grav\\Plugin\\XapiPlugin\\": "classes/"
     }
+  }
 }
