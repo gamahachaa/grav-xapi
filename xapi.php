@@ -228,7 +228,7 @@ class XapiPlugin extends Plugin {
         $uri_query = $this->grav['uri']->query();
         $url_query_tab = explode("&", $uri_query);
         
-        $queries = $this->prepaprepareQueries($url_query_tab);
+        $queries = $this->prepareQueries($url_query_tab);
         
 //        if(sizeof($url_query_tab)>0)
 //        {
