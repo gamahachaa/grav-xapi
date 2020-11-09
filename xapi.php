@@ -229,6 +229,12 @@ class XapiPlugin extends Plugin {
         $url_query_tab = explode("&", $uri_query);
         
         $queries = $this->prepareQueries($url_query_tab);
+//        echo ("<pre>".var_dump($this->page->template())."</pre>");
+//        echo ("<pre>".var_dump($queries)."</pre>");
+//        echo ("<pre>".var_dump($this->grav['uri'])."</pre>");
+        //$this->grav['debugger']->addMessage($this->grav['uri']);
+         //$this->grav['debugger']->addMessage($queries);
+        
         
 //        if(sizeof($url_query_tab)>0)
 //        {
@@ -254,13 +260,16 @@ class XapiPlugin extends Plugin {
  
         if(sizeof($queries)>0)
         {
-            $statement = $this->prepareStatement('', $queries);
+            $statement = $this->prepareStatement('', new Extensions($queries));
+//            $statement = $this->prepareStatement();
         }
         else{
             $statement = $this->prepareStatement();
         }
         
+        
         // SEND STATEMENT
+        
         $response = $lrs->saveStatement($statement);
         
         if ($response) {
@@ -450,7 +459,6 @@ class XapiPlugin extends Plugin {
         
         // do not track routes and uri queries
         // Do not track a certain page based on its template
-
         if ($this->config->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->config->get('plugins.' . $this->pname . '.filter.template')))
             return false;
         //$this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());

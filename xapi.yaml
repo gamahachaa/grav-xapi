@@ -25,6 +25,9 @@ track_queries_as_extension: true
 filter:
   template:
     - login
+    - tntquery-ajax
+    - tntsearch
+    - search
   taxonomies:
     category:
       - reporting
@@ -35,5 +38,5 @@ filter:
   uri:
     query:
         -
-            key: search
-            value: test
+            key: s
+            value: 
