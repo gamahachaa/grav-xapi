@@ -143,8 +143,8 @@ class XapiPlugin extends Plugin {
         
         if ($this->filter()) {
             if ($this->config->get('plugins.' . $this->pname . '.php.active')) {
-                //$remote = ;
-                $this->trackFromServer($this->prepareLRS($this->user));
+                $remote = $this->prepareLRS($this->user);
+                $this->trackFromServer($remote);
             }
         }
     }
@@ -225,9 +225,10 @@ class XapiPlugin extends Plugin {
     }
     private function trackFromServer(RemoteLRS &$lrs = null) {
         //track_as_extension: true
-//        $uri_query = $this->grav['uri']->query();
-//        $url_query_tab = explode($uri_query,"&");
-        $queries = $this->prepaprepareQueries( explode( $this->grav['uri']->query() ,"&") );
+        $uri_query = $this->grav['uri']->query();
+        $url_query_tab = explode($uri_query,"&");
+        
+        $queries = $this->prepaprepareQueries($url_query_tab);
         
 //        if(sizeof($url_query_tab)>0)
 //        {
