@@ -208,7 +208,7 @@ class XapiPlugin extends Plugin {
         $tmp = [];
         foreach ($tab as $v)
         {
-            $tmp = explode($v, "=");
+            $tmp = explode ("=", $v);
             if(strpos($tmp[0], $this->config->get('plugins.' . $this->pname . '.search_queries.key')))
             {
                 ////https://w3id.org/xapi/dod-isd/verbs/found
@@ -226,7 +226,7 @@ class XapiPlugin extends Plugin {
     private function trackFromServer(RemoteLRS &$lrs = null) {
         //track_as_extension: true
         $uri_query = $this->grav['uri']->query();
-        $url_query_tab = explode($uri_query,"&");
+        $url_query_tab = explode("&", $uri_query);
         
         $queries = $this->prepaprepareQueries($url_query_tab);
         
