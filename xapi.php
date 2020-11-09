@@ -147,6 +147,9 @@ class XapiPlugin extends Plugin {
                 $this->trackFromServer($remote);
             }
         }
+        else{
+            $this->grav['debugger']->addMessage("XAPI page filtered");
+        }
     }
 
     /**
@@ -459,6 +462,8 @@ class XapiPlugin extends Plugin {
         
         // do not track routes and uri queries
         // Do not track a certain page based on its template
+        $this->grav['debugger']->addMessage($this->config->get('plugins.' . $this->pname . '.filter.template'));
+        $this->grav['debugger']->addMessage($this->page->template());
         if ($this->config->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->config->get('plugins.' . $this->pname . '.filter.template')))
             return false;
         //$this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());
