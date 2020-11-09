@@ -216,7 +216,7 @@ class XapiPlugin extends Plugin {
                 // SEND STATEMENT
                 $r = $lrs->saveStatement($stmt);
             }
-            else if ($trackAsExtension)
+            else if ($trackAsExtension && sizeof(tmp)>0)
             {
                 $q[$tmp[0]]=$tmp[1];
             }
