@@ -49,7 +49,10 @@ class XapiPlugin extends Plugin {
     protected $verb;
     protected $actor; //TinCan\Agent
     protected $activity; //TinCan\Activity
+    // search queries
+    protected $search_key;
     
+     
 
     public static function getSubscribedEvents() {
 
@@ -90,6 +93,7 @@ class XapiPlugin extends Plugin {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
         }
         //$this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
+        $this->search_key = $this->config->get('plugins.' . $this->pname . '.search_queries.q');
          $this->lrss = [];
          $this->activityTypes = [];
          $this->verbs = [];
@@ -135,10 +139,12 @@ class XapiPlugin extends Plugin {
         // prepare temaplates verbs 
         $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_verb'), $this->verbs );
         
+        
+        
         if ($this->filter()) {
             if ($this->config->get('plugins.' . $this->pname . '.php.active')) {
-                $remote = $this->prepareLRS($this->user);
-                $this->trackFromServer($remote);
+                //$remote = ;
+                $this->trackFromServer($this->prepareLRS($this->user));
             }
         }
     }
@@ -194,8 +200,65 @@ class XapiPlugin extends Plugin {
             }
         }
     }
+    private function prepareQueries($tab)
+    {
+        $q=[];
+        $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
+            
+        $tmp = [];
+        foreach ($tab as $v)
+        {
+            $tmp = explode($v, "=");
+            if(strpos($tmp[0], $this->config->get('plugins.' . $this->pname . '.search_queries.key')))
+            {
+                ////https://w3id.org/xapi/dod-isd/verbs/found
+                $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', [$tmp[0]=>$tmp[1]]);
+                // SEND STATEMENT
+                $r = $lrs->saveStatement($stmt);
+            }
+            else if ($trackAsExtension)
+            {
+                $q[$tmp[0]]=$tmp[1];
+            }
+        }
+        return $q;
+    }
     private function trackFromServer(RemoteLRS &$lrs = null) {
-        $statement = $this->prepareStatement();
+        //track_as_extension: true
+//        $uri_query = $this->grav['uri']->query();
+//        $url_query_tab = explode($uri_query,"&");
+        $queries = $this->prepaprepareQueries( explode( $this->grav['uri']->query() ,"&") );
+        
+//        if(sizeof($url_query_tab)>0)
+//        {
+//            $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
+//            
+//            $tmp;
+//            foreach ($url_query_tab as $v)
+//            {
+//                $tmp = explode($v, "=");
+//                if(strpos($tmp[0], $this->config->get('plugins.' . $this->pname . '.search_queries.key')))
+//                {
+//                    ////https://w3id.org/xapi/dod-isd/verbs/found
+//                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', [$tmp[0]=>$tmp[1]]);
+//                    // SEND STATEMENT
+//                    $r = $lrs->saveStatement($stmt);
+//                }
+//                else if ($trackAsExtension)
+//                {
+//                    $queries[$tmp[0]]=$tmp[1];
+//                }
+//            }
+//        }
+ 
+        if(sizeof($queries)>0)
+        {
+            $statement = $this->prepareStatement('', $queries);
+        }
+        else{
+            $statement = $this->prepareStatement();
+        }
+        
         // SEND STATEMENT
         $response = $lrs->saveStatement($statement);
         
@@ -275,8 +338,10 @@ class XapiPlugin extends Plugin {
     private function prepareActivity() 
     {
         $object = new \TinCan\Activity();
-        $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
-        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
+        
+//        $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
+//        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
+        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path();
         $object->setId($activity_id);
         $object->setDefinition($this->prepareActivitytDefintionFromPage($this->page));
         return $object;

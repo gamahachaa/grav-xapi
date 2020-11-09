@@ -18,7 +18,10 @@ template_verb:
     -
         naming: default
         verbIRI: 'http://activitystrea.ms/schema/1.0/read'
-
+search_queries:
+    key: q
+    track_as_search_statement: true
+track_queries_as_extension: true
 filter:
   template:
     - login
