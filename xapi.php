@@ -208,27 +208,27 @@ class XapiPlugin extends Plugin {
         $q=[];
         $url_query_tab = strpos($uri_query,"&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
-         $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);
-          $this->grav['debugger']->addMessage($url_query_tab);  
+//        $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);
+//         $this->grav['debugger']->addMessage($url_query_tab);  
         $tmp = [];
         foreach ($url_query_tab as $v)
         {
             $tmp = explode ("=", $v);
             if(count($tmp)>1)
             {
-                $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
+//                $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
                 if($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
                 {
                     ////https://w3id.org/xapi/dod-isd/verbs/found
                     $ext["https://" . $this->grav['uri']->host().$tmp[0]] = $tmp[1];
-                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
+                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions(["https://" . $this->grav['uri']->host()."/".$tmp[0]=>$tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
-                    $this->grav['debugger']->addMessage($r);
-                    if ($r) {
+//                    $this->grav['debugger']->addMessage($r);
+                    if ($r['success']) {
                         //uncomment for debugging
                          /***/
-                        $this->grav['debugger']->getCaller();
+//                        $this->grav['debugger']->getCaller();
                         $this->grav['debugger']->addMessage('trackFromServer success');
                         $this->grav['debugger']->addMessage($stmt);
                         /**/
@@ -241,13 +241,13 @@ class XapiPlugin extends Plugin {
                     }
                     
                 }
-                if ($trackAsExtension)
+                else if ($trackAsExtension)
                 {
-                    $q["https://" . $this->grav['uri']->host().$tmp[0]]=$tmp[1];
+                    $q["https://" . $this->grav['uri']->host()."/".$tmp[0]]=$tmp[1];
                 }
             }
         }
-        $this->grav['debugger']->addMessage($q); 
+//        $this->grav['debugger']->addMessage($q); 
         return $q;
     }
     private function trackFromServer(RemoteLRS &$lrs = null) {
@@ -264,8 +264,8 @@ class XapiPlugin extends Plugin {
  
         if(count($queries)>0)
         {
-            $this->grav['debugger']->addMessage('should add extension ');  
-            $this->grav['debugger']->addMessage($queries);  
+//            $this->grav['debugger']->addMessage('should add extension ');  
+//            $this->grav['debugger']->addMessage($queries);  
             $statement = $this->prepareStatement('', new Extensions($queries));
 //            $statement = $this->prepareStatement();
         }
@@ -278,10 +278,10 @@ class XapiPlugin extends Plugin {
         
         $response = $lrs->saveStatement($statement);
         
-        if ($response) {
+        if ($response['success']) {
             //uncomment for debugging
              /***/
-            $this->grav['debugger']->getCaller();
+//            $this->grav['debugger']->getCaller();
             $this->grav['debugger']->addMessage('trackFromServer success');
             $this->grav['debugger']->addMessage($statement);
              /**/
