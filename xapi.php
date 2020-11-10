@@ -217,12 +217,27 @@ class XapiPlugin extends Plugin {
             if(count($tmp)>1)
             {
                 $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
-                if($tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
+                if($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
                 {
                     ////https://w3id.org/xapi/dod-isd/verbs/found
                     $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
+                    if ($r) {
+                        //uncomment for debugging
+                         /***/
+                        $this->grav['debugger']->getCaller();
+                        $this->grav['debugger']->addMessage('trackFromServer success');
+                        $this->grav['debugger']->addMessage($statement);
+                        /**/
+                    } else {
+                        //uncomment for debugging
+                        /***/
+                        $this->grav['debugger']->addMessage('trackFromServer failed');
+                        $this->grav['debugger']->addMessage($statement);
+                        /* */
+                    }
+                    
                 }
                 else if ($trackAsExtension && sizeof($tmp)>1)
                 {
@@ -243,38 +258,12 @@ class XapiPlugin extends Plugin {
         {
             $queries = $this->prepareQueries($uri_query, $lrs);
         }
-//        echo ("<pre>".var_dump($this->page->template())."</pre>");
-//        echo ("<pre>".var_dump($queries)."</pre>");
-//        echo ("<pre>".var_dump($this->grav['uri'])."</pre>");
-        //$this->grav['debugger']->addMessage($this->grav['uri']);
-         //$this->grav['debugger']->addMessage($queries);
-        
-        
-//        if(sizeof($url_query_tab)>0)
-//        {
-//            $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
-//            
-//            $tmp;
-//            foreach ($url_query_tab as $v)
-//            {
-//                $tmp = explode($v, "=");
-//                if(strpos($tmp[0], $this->config->get('plugins.' . $this->pname . '.search_queries.key')))
-//                {
-//                    ////https://w3id.org/xapi/dod-isd/verbs/found
-//                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', [$tmp[0]=>$tmp[1]]);
-//                    // SEND STATEMENT
-//                    $r = $lrs->saveStatement($stmt);
-//                }
-//                else if ($trackAsExtension)
-//                {
-//                    $queries[$tmp[0]]=$tmp[1];
-//                }
-//            }
-//        }
+
  
         if(count($queries)>0)
         {
-            $this->grav['debugger']->addMessage('should track found '.$tmp[0]." => " .$tmp[1]);  
+            $this->grav['debugger']->addMessage('should add extension ');  
+            $this->grav['debugger']->addMessage($queries);  
             $statement = $this->prepareStatement('', new Extensions($queries));
 //            $statement = $this->prepareStatement();
         }
@@ -289,17 +278,17 @@ class XapiPlugin extends Plugin {
         
         if ($response) {
             //uncomment for debugging
-             /***
+             /***/
             $this->grav['debugger']->getCaller();
             $this->grav['debugger']->addMessage('trackFromServer success');
             $this->grav['debugger']->addMessage($statement);
-             **/
+             /**/
         } else {
             //uncomment for debugging
-            /***
+            /***/
             $this->grav['debugger']->addMessage('trackFromServer failed');
             $this->grav['debugger']->addMessage($statement);
-            * */
+            /* */
         }
 
     }
