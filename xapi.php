@@ -223,6 +223,7 @@ class XapiPlugin extends Plugin {
                     $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
+                    $this->grav['debugger']->addMessage($r);
                     if ($r) {
                         //uncomment for debugging
                          /***/
