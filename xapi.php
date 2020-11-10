@@ -241,7 +241,7 @@ class XapiPlugin extends Plugin {
        
         if($uri_query != "")
         {
-            $queries = $this->prepareQueries($url_query, $lrs);
+            $queries = $this->prepareQueries($uri_query, $lrs);
         }
 //        echo ("<pre>".var_dump($this->page->template())."</pre>");
 //        echo ("<pre>".var_dump($queries)."</pre>");
