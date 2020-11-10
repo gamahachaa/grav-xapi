@@ -203,19 +203,20 @@ class XapiPlugin extends Plugin {
             }
         }
     }
-    private function prepareQueries($tab)
+    private function prepareQueries($tab, RemoteLRS &$lrs = null)
     {
         $q=[];
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
-            
+         $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);    
         $tmp = [];
         foreach ($tab as $v)
         {
             $tmp = explode ("=", $v);
-            if(strpos($tmp[0], $this->config->get('plugins.' . $this->pname . '.search_queries.key')))
+            $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
+            if($tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
             {
                 ////https://w3id.org/xapi/dod-isd/verbs/found
-                $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', [$tmp[0]=>$tmp[1]]);
+                $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
                 // SEND STATEMENT
                 $r = $lrs->saveStatement($stmt);
             }
@@ -224,6 +225,7 @@ class XapiPlugin extends Plugin {
                 $q[$tmp[0]]=$tmp[1];
             }
         }
+        $this->grav['debugger']->addMessage($q); 
         return $q;
     }
     private function trackFromServer(RemoteLRS &$lrs = null) {
@@ -231,7 +233,7 @@ class XapiPlugin extends Plugin {
         $uri_query = $this->grav['uri']->query();
         $url_query_tab = explode("&", $uri_query);
         
-        $queries = $this->prepareQueries($url_query_tab);
+        $queries = $this->prepareQueries($url_query_tab, $lrs);
 //        echo ("<pre>".var_dump($this->page->template())."</pre>");
 //        echo ("<pre>".var_dump($queries)."</pre>");
 //        echo ("<pre>".var_dump($this->grav['uri'])."</pre>");
@@ -263,6 +265,7 @@ class XapiPlugin extends Plugin {
  
         if(sizeof($queries)>0)
         {
+            $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
             $statement = $this->prepareStatement('', new Extensions($queries));
 //            $statement = $this->prepareStatement();
         }
@@ -310,7 +313,7 @@ class XapiPlugin extends Plugin {
      * @todo statics for common used verbs with multilang desc
      */
     protected function prepareVerb($verbID = '') {
-        $this->grav['debugger']->addMessage('grav xapi prepareVerb');
+        $this->grav['debugger']->addMessage('grav xapi prepareVerb'.$verbID);
         if ($verbID == '') 
         {
             $id = $this->verbs[$this->page->template()]['verbIRI']??$this->verbs['default']['verbIRI'];
@@ -458,7 +461,7 @@ class XapiPlugin extends Plugin {
         // DO not track modulars (does not affect pages made of collections)
         if ($this->page->modular())
             return false;
-       // $this->grav['debugger']->addMessage('grav xapi filter');
+       $this->grav['debugger']->addMessage('grav xapi filter');
         
         // do not track routes and uri queries
         // Do not track a certain page based on its template
@@ -481,7 +484,7 @@ class XapiPlugin extends Plugin {
                         return false;
                 }
             }
-            //$this->grav['debugger']->addMessage('uri.routes not filtererd : '.$uri->route());
+            $this->grav['debugger']->addMessage('uri.routes not filtererd : '.$uri->route());
             // queries
             if ($this->config->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->config->get('plugins.' . $this->pname . '.filter.uri.query');
@@ -501,7 +504,7 @@ class XapiPlugin extends Plugin {
         if ($this->config->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->config->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
-        //$this->grav['debugger']->addMessage('users not filtererd : ' . $this->user->login);
+        $this->grav['debugger']->addMessage('users not filtererd : ' . $this->user->login);
         // Do not track users if they belong to a certain group
         if ($this->config->get('plugins.' . $this->pname . '.filter.groups')) {
             if (isset($this->user->groups)) {
