@@ -203,13 +203,14 @@ class XapiPlugin extends Plugin {
             }
         }
     }
-    private function prepareQueries($tab, RemoteLRS &$lrs = null)
+    private function prepareQueries($uri_query, RemoteLRS &$lrs = null)
     {
         $q=[];
+        $url_query_tab = strpos($uri_query,"&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
          $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);    
         $tmp = [];
-        foreach ($tab as $v)
+        foreach ($url_query_tab as $v)
         {
             $tmp = explode ("=", $v);
             if(count($tmp)>1)
@@ -234,11 +235,12 @@ class XapiPlugin extends Plugin {
     private function trackFromServer(RemoteLRS &$lrs = null) {
         //track_as_extension: true
         $uri_query = $this->grav['uri']->query();
-        $url_query_tab = explode("&", $uri_query);
+        //
         $queries = [];
-        if(count($url_query_tab) >0)
+        $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
+        if($uri_query != "")
         {
-            $queries = $this->prepareQueries($url_query_tab, $lrs);
+            $queries = $this->prepareQueries($url_query, $lrs);
         }
 //        echo ("<pre>".var_dump($this->page->template())."</pre>");
 //        echo ("<pre>".var_dump($queries)."</pre>");
