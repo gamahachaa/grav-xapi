@@ -212,17 +212,20 @@ class XapiPlugin extends Plugin {
         foreach ($tab as $v)
         {
             $tmp = explode ("=", $v);
-            $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
-            if($tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
+            if(sizeof($tmp)>0)
             {
-                ////https://w3id.org/xapi/dod-isd/verbs/found
-                $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
-                // SEND STATEMENT
-                $r = $lrs->saveStatement($stmt);
-            }
-            else if ($trackAsExtension && sizeof($tmp)>1)
-            {
-                $q[$tmp[0]]=$tmp[1];
+                $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
+                if($tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
+                {
+                    ////https://w3id.org/xapi/dod-isd/verbs/found
+                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
+                    // SEND STATEMENT
+                    $r = $lrs->saveStatement($stmt);
+                }
+                else if ($trackAsExtension && sizeof($tmp)>1)
+                {
+                    $q[$tmp[0]]=$tmp[1];
+                }
             }
         }
         $this->grav['debugger']->addMessage($q); 
