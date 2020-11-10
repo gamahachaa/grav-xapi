@@ -220,6 +220,7 @@ class XapiPlugin extends Plugin {
                 if($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
                 {
                     ////https://w3id.org/xapi/dod-isd/verbs/found
+                    $ext["https://" . $this->grav['uri']->host().$tmp[0]] = $tmp[1];
                     $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions([$tmp[0]=>$tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
@@ -242,7 +243,7 @@ class XapiPlugin extends Plugin {
                 }
                 if ($trackAsExtension)
                 {
-                    $q[$tmp[0]]=$tmp[1];
+                    $q["https://" . $this->grav['uri']->host().$tmp[0]]=$tmp[1];
                 }
             }
         }
