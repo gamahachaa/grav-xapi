@@ -13,6 +13,7 @@ use TinCan\Extensions;
 use TinCan\RemoteLRS;
 use TinCan\Verb;
 use TinCan\Statement;
+
 //use Grav\Plugin\XapiPlugin\Verbs;
 
 /**
@@ -39,7 +40,6 @@ class XapiPlugin extends Plugin {
     protected $lrss;
     protected $activityTypes;
     protected $verbs;
-    
     // endpoint
     protected $endpoint;
     protected $username;
@@ -51,8 +51,6 @@ class XapiPlugin extends Plugin {
     protected $activity; //TinCan\Activity
     // search queries
     protected $search_key;
-    
-     
 
     public static function getSubscribedEvents() {
 
@@ -61,8 +59,8 @@ class XapiPlugin extends Plugin {
             'onTwigSiteVariables' => ['onTwigSiteVariables', 0],
             'onFormProcessed' => ['onFormProcessed', 0],
             'onPluginsInitialized' => [
-                    ['autoload', 100000],
-                    ['onPluginsInitialized', 0]
+                ['autoload', 100000],
+                ['onPluginsInitialized', 0]
             ]
         ];
     }
@@ -94,29 +92,29 @@ class XapiPlugin extends Plugin {
         }
         //$this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
         $this->search_key = $this->config->get('plugins.' . $this->pname . '.search_queries.q');
-         $this->lrss = [];
-         $this->activityTypes = [];
-         $this->verbs = [];
+        $this->lrss = [];
+        $this->activityTypes = [];
+        $this->verbs = [];
         // todo caching 
         //$this->cache = $this->grav['cache'];
         $this->pname = 'xapi';
-        
+
         $this->user = $this->grav['user'];
         $this->grav['debugger']->addMessage($this->grav['user']);
         $this->actor = $this->prepareAgent($this->user);
         // SET LRS credentials based on user's group profile
     }
-     //********************************************* JS **************************************************************/
+
+    //********************************************* JS **************************************************************/
 
     public function onTwigSiteVariables(Event $event) {
         if (!$this->config->get('plugins.' . $this->pname . '.js.active'))
             return;
         $this->grav['assets']->addJs('plugin://' . $this->pname . '/js/tincan-min.js');
-      
     }
+
     // @todo add more JS functionalities
-    
- //********************************************* PHP **************************************************************/
+    //********************************************* PHP **************************************************************/
 
     /**
      *
@@ -127,27 +125,26 @@ class XapiPlugin extends Plugin {
         if ($this->isAdmin()) {
             return;
         }
-         //$this->grav['debugger']->addMessage("XAPI onPageInitialized");
+        //$this->grav['debugger']->addMessage("XAPI onPageInitialized");
         if (!$this->user->authorize('site.login')) {
             return;
         }
         $this->page = $e['page'];
         // prepares LRSs
-        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.lrs'), $this->lrss );
-       // prepare templates activities
-        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_activityType'), $this->activityTypes );
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.lrs'), $this->lrss);
+        // prepare templates activities
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_activityType'), $this->activityTypes);
         // prepare temaplates verbs 
-        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_verb'), $this->verbs );
-        
-        
-        
+        $this->mapConfigNamedCollections($this->config->get('plugins.' . $this->pname . '.template_verb'), $this->verbs);
+
+
+
         if ($this->filter()) {
             if ($this->config->get('plugins.' . $this->pname . '.php.active')) {
                 $remote = $this->prepareLRS($this->user);
                 $this->trackFromServer($remote);
             }
-        }
-        else{
+        } else {
             $this->grav['debugger']->addMessage("XAPI page filtered");
         }
     }
@@ -173,7 +170,7 @@ class XapiPlugin extends Plugin {
 
                 $statement = $this->prepareStatement($params['verb'] ?? '', $this->prepareExtentions($params['extensions'], $form));
                 $response = $lrs->saveStatement($statement);
-                
+
                 //uncomment for debugging
                 if ($response->success) {
                     //$this->grav['debugger']->addMessage("Statement sent successfully!\n");
@@ -184,115 +181,102 @@ class XapiPlugin extends Plugin {
         }
     }
 
-    /*********************************************************************************************************************
-    *******************************************PRIVATES*******************************************************************
-    *********************************************************************************************************************/
-       
-    private function mapConfigNamedCollections($configVar, &$thisVar)
-    {
-        
-        foreach( $configVar as $var )
-        {
+    /*     * *******************************************************************************************************************
+     * ******************************************PRIVATES*******************************************************************
+     * ******************************************************************************************************************* */
+
+    private function mapConfigNamedCollections($configVar, &$thisVar) {
+
+        foreach ($configVar as $var) {
             $thisVar[$var['naming']] = [];
-            foreach( $var as $k=> $v)
-            {
-                if($k == 'naming') continue;
-                else{
+            foreach ($var as $k => $v) {
+                if ($k == 'naming')
+                    continue;
+                else {
                     $thisVar[$var['naming']][$k] = $v;
                 }
             }
         }
     }
-    private function prepareQueries($uri_query, RemoteLRS &$lrs = null)
-    {
-        $q=[];
-        $url_query_tab = strpos($uri_query,"&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
+
+    private function prepareQueries($uri_query, RemoteLRS &$lrs = null) {
+        $q = [];
+        $url_query_tab = strpos($uri_query, "&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
 //        $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);
 //         $this->grav['debugger']->addMessage($url_query_tab);  
         $tmp = [];
-        foreach ($url_query_tab as $v)
-        {
-            $tmp = explode ("=", $v);
-            if(count($tmp)>1)
-            {
+        foreach ($url_query_tab as $v) {
+            $tmp = explode("=", $v);
+            if (count($tmp) > 1) {
 //                $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
-                if($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
-                {
+                if ($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key')) {
                     ////https://w3id.org/xapi/dod-isd/verbs/found
-                    $ext["https://" . $this->grav['uri']->host().$tmp[0]] = $tmp[1];
-                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions(["https://" . $this->grav['uri']->host()."/".$tmp[0]=>$tmp[1]]));
+                    $ext["https://" . $this->grav['uri']->host() . $tmp[0]] = $tmp[1];
+                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions(["https://" . $this->grav['uri']->host() . "/" . $tmp[0] => $tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
 //                    $this->grav['debugger']->addMessage($r);
-                    if ($r['success']) {
-                        //uncomment for debugging
-                         /***/
+                    //uncomment for debugging
+                    /*                     * */
 //                        $this->grav['debugger']->getCaller();
-                        $this->grav['debugger']->addMessage('trackFromServer success');
-                        $this->grav['debugger']->addMessage($stmt);
-                        /**/
-                    } else {
+//                        $this->grav['debugger']->addMessage('trackFromServer success');
+//                        $this->grav['debugger']->addMessage($r->content);
+//                        $this->grav['debugger']->addMessage($r->httpResponse);
+                    /**/
+
+                    if (!$r->success) {
                         //uncomment for debugging
-                        /***/
+                        /*                         * */
                         $this->grav['debugger']->addMessage('trackFromServer failed');
+                        $this->grav['debugger']->addMessage($r->httpResponse);
+                        $this->grav['debugger']->addMessage($r->content);
                         $this->grav['debugger']->addMessage($stmt);
+
+
                         /* */
                     }
-                    
-                }
-                else if ($trackAsExtension)
-                {
-                    $q["https://" . $this->grav['uri']->host()."/".$tmp[0]]=$tmp[1];
+                } else if ($trackAsExtension) {
+                    $q["https://" . $this->grav['uri']->host() . "/" . $tmp[0]] = $tmp[1];
                 }
             }
         }
 //        $this->grav['debugger']->addMessage($q); 
         return $q;
     }
+
     private function trackFromServer(RemoteLRS &$lrs = null) {
         //track_as_extension: true
         $uri_query = $this->grav['uri']->query();
         //
         $queries = [];
-       
-        if($uri_query != "")
-        {
+
+        if ($uri_query != "") {
             $queries = $this->prepareQueries($uri_query, $lrs);
         }
 
- 
-        if(count($queries)>0)
-        {
+
+        if (count($queries) > 0) {
 //            $this->grav['debugger']->addMessage('should add extension ');  
 //            $this->grav['debugger']->addMessage($queries);  
             $statement = $this->prepareStatement('', new Extensions($queries));
 //            $statement = $this->prepareStatement();
-        }
-        else{
+        } else {
             $statement = $this->prepareStatement();
         }
-        
-        
-        // SEND STATEMENT
-        
-        $response = $lrs->saveStatement($statement);
-        
-        if ($response['success']) {
-            //uncomment for debugging
-             /***/
-//            $this->grav['debugger']->getCaller();
-            $this->grav['debugger']->addMessage('trackFromServer success');
-            $this->grav['debugger']->addMessage($statement);
-             /**/
-        } else {
-            //uncomment for debugging
-            /***/
-            $this->grav['debugger']->addMessage('trackFromServer failed');
-            $this->grav['debugger']->addMessage($statement);
-            /* */
-        }
 
+
+        // SEND STATEMENT
+
+        $response = $lrs->saveStatement($statement);
+        if (!$response->success) {
+            //uncomment for debugging
+            /*             * */
+            $this->grav['debugger']->addMessage('trackFromServer failed');
+            $this->grav['debugger']->addMessage($response->httpResponse);
+            $this->grav['debugger']->addMessage($response->content);
+            $this->grav['debugger']->addMessage($stmt);
+        }
     }
 
     /**
@@ -313,17 +297,16 @@ class XapiPlugin extends Plugin {
      * @todo statics for common used verbs with multilang desc
      */
     protected function prepareVerb($verbID = '') {
-        $this->grav['debugger']->addMessage('grav xapi prepareVerb'.$verbID);
-        if ($verbID == '') 
-        {
-            $id = $this->verbs[$this->page->template()]['verbIRI']??$this->verbs['default']['verbIRI'];
+        $this->grav['debugger']->addMessage('grav xapi prepareVerb' . $verbID);
+        if ($verbID == '') {
+            $id = $this->verbs[$this->page->template()]['verbIRI'] ?? $this->verbs['default']['verbIRI'];
         } else {
             $id = $verbID;
         }
-        
-        $id_array = explode('/',$id);
+
+        $id_array = explode('/', $id);
         // make sure verb uri doesnt finish with 
-        $endisplay = end($id_array)==""?prev($id_array):end($id_array);
+        $endisplay = end($id_array) == "" ? prev($id_array) : end($id_array);
         //echo $page = end($link_array);
         return new \TinCan\Verb([
             'id' => $id,
@@ -351,10 +334,9 @@ class XapiPlugin extends Plugin {
      * @param type $page
      * @return Activity
      */
-    private function prepareActivity() 
-    {
+    private function prepareActivity() {
         $object = new \TinCan\Activity();
-        
+
 //        $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
 //        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
         $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path();
@@ -441,7 +423,7 @@ class XapiPlugin extends Plugin {
 
         $desc['name'] = [$language => $this->page->title()];
         // set the activity type
-        $desc['type'] = $this->activityTypes[$this->page->template()]['activityIRI']??$this->activityTypes['default']['activityIRI'];
+        $desc['type'] = $this->activityTypes[$this->page->template()]['activityIRI'] ?? $this->activityTypes['default']['activityIRI'];
         if (isset($this->page->header()->metadata) && isset($this->page->header()->metadata['description'])) {
             $desc['description'] = [$language => $this->page->header()->metadata['description']];
         }
@@ -451,7 +433,6 @@ class XapiPlugin extends Plugin {
         return new ActivityDefinition($desc);
     }
 
-   
     //********************************************* GENERIC **************************************************************/
     /**
      * 
@@ -461,8 +442,8 @@ class XapiPlugin extends Plugin {
         // DO not track modulars (does not affect pages made of collections)
         if ($this->page->modular())
             return false;
-       $this->grav['debugger']->addMessage('grav xapi filter');
-        
+        $this->grav['debugger']->addMessage('grav xapi filter');
+
         // do not track routes and uri queries
         // Do not track a certain page based on its template
         $this->grav['debugger']->addMessage($this->config->get('plugins.' . $this->pname . '.filter.template'));
@@ -484,22 +465,20 @@ class XapiPlugin extends Plugin {
                         return false;
                 }
             }
-            $this->grav['debugger']->addMessage('uri.routes not filtererd : '.$uri->route());
+            $this->grav['debugger']->addMessage('uri.routes not filtererd : ' . $uri->route());
             // queries
             if ($this->config->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->config->get('plugins.' . $this->pname . '.filter.uri.query');
                 foreach ($filtered_queries as $v) {
-                    if($v['value']=='' )
-                    {
+                    if ($v['value'] == '') {
                         return false;
-                    }
-                    else if ($uri->query($v['key']) === $v['value'])
+                    } else if ($uri->query($v['key']) === $v['value'])
                         return false;
                     //$this->grav['debugger']->addMessage('uri.query not filtererd : '.$uri->query($v['key']));
                 }
             }
         }
-        
+
         // Do not track users
         if ($this->config->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->config->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
@@ -548,7 +527,6 @@ class XapiPlugin extends Plugin {
         return $this->lrss['default'];
     }
 
-
 /////////////////////////////////////////////////////////// DUMMY  ///////////////////////////////////////////////////
     function getTestStatement() {
         return [
@@ -563,6 +541,7 @@ class XapiPlugin extends Plugin {
             ],
         ];
     }
+
     function getTestLRS() {
         new RemoteLRS(
                 'https://cloud.scorm.com/lrs/XXXXXXXXX', '1.0.1', 'username', 'pwd'
