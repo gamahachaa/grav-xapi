@@ -232,8 +232,11 @@ class XapiPlugin extends Plugin {
         //track_as_extension: true
         $uri_query = $this->grav['uri']->query();
         $url_query_tab = explode("&", $uri_query);
-        
-        $queries = $this->prepareQueries($url_query_tab, $lrs);
+        $queries = [];
+        if(sizeof($url_query_tab) >0)
+        {
+            $queries = $this->prepareQueries($url_query_tab, $lrs);
+        }
 //        echo ("<pre>".var_dump($this->page->template())."</pre>");
 //        echo ("<pre>".var_dump($queries)."</pre>");
 //        echo ("<pre>".var_dump($this->grav['uri'])."</pre>");
