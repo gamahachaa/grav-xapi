@@ -203,52 +203,36 @@ class XapiPlugin extends Plugin {
         $q = [];
         $url_query_tab = strpos($uri_query, "&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
-//        $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);
-//         $this->grav['debugger']->addMessage($url_query_tab);  
+        $track_serach_as_statement = $this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement');
+
         $tmp = [];
         foreach ($url_query_tab as $v) {
             $tmp = explode("=", $v);
             if (count($tmp) > 1) {
-//                $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
-                if ($this->config->get('plugins.' . $this->pname . '.search_queries.track_as_search_statement') && $tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key')) {
-                    ////https://w3id.org/xapi/dod-isd/verbs/found
-                    $ext["https://" . $this->grav['uri']->host() . $tmp[0]] = $tmp[1];
-                    $stmt = $this->prepareStatement('https://w3id.org/xapi/dod-isd/verbs/found', new Extensions(["https://" . $this->grav['uri']->host() . "/" . $tmp[0] => $tmp[1]]));
+                $searchQueryKey = $this->config->get('plugins.' . $this->pname . '.search_queries.key');
+                $searchQueryVerb = $this->config->get('plugins.' . $this->pname . '.search_queries.verb');
+                if ( $track_serach_as_statement && $tmp[0] == $searchQueryKey) {
+                    $stmt = $this->prepareStatement($searchQueryVerb, new Extensions(["https://" . $this->grav['uri']->host() . "/" . $tmp[0] => $tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
-//                    $this->grav['debugger']->addMessage($r);
-                    //uncomment for debugging
-                    /*                     * */
-//                        $this->grav['debugger']->getCaller();
-//                        $this->grav['debugger']->addMessage('trackFromServer success');
-//                        $this->grav['debugger']->addMessage($r->content);
-//                        $this->grav['debugger']->addMessage($r->httpResponse);
-                    /**/
 
                     if (!$r->success) {
                         //uncomment for debugging
-                        /*                         * */
                         $this->grav['debugger']->addMessage('trackFromServer failed');
                         $this->grav['debugger']->addMessage($r->httpResponse);
                         $this->grav['debugger']->addMessage($r->content);
                         $this->grav['debugger']->addMessage($stmt);
-
-
-                        /* */
                     }
                 } else if ($trackAsExtension) {
                     $q["https://" . $this->grav['uri']->host() . "/" . $tmp[0]] = $tmp[1];
                 }
             }
         }
-//        $this->grav['debugger']->addMessage($q); 
         return $q;
     }
 
     private function trackFromServer(RemoteLRS &$lrs = null) {
-        //track_as_extension: true
         $uri_query = $this->grav['uri']->query();
-        //
         $queries = [];
 
         if ($uri_query != "") {
@@ -257,10 +241,7 @@ class XapiPlugin extends Plugin {
 
 
         if (count($queries) > 0) {
-//            $this->grav['debugger']->addMessage('should add extension ');  
-//            $this->grav['debugger']->addMessage($queries);  
             $statement = $this->prepareStatement('', new Extensions($queries));
-//            $statement = $this->prepareStatement();
         } else {
             $statement = $this->prepareStatement();
         }
@@ -336,9 +317,7 @@ class XapiPlugin extends Plugin {
      */
     private function prepareActivity() {
         $object = new \TinCan\Activity();
-
-//        $query = $this->grav['uri']->query() == '' ? '' : "?" . $this->grav['uri']->query();
-//        $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path() . $query;
+        //Activities are stored without the language and the queries
         $activity_id = "https://" . $this->grav['uri']->host() . $this->grav['uri']->path();
         $object->setId($activity_id);
         $object->setDefinition($this->prepareActivitytDefintionFromPage($this->page));
@@ -442,12 +421,11 @@ class XapiPlugin extends Plugin {
         // DO not track modulars (does not affect pages made of collections)
         if ($this->page->modular())
             return false;
-        $this->grav['debugger']->addMessage('grav xapi filter');
+//        $this->grav['debugger']->addMessage('grav xapi filter');
 
         // do not track routes and uri queries
         // Do not track a certain page based on its template
-        $this->grav['debugger']->addMessage($this->config->get('plugins.' . $this->pname . '.filter.template'));
-        $this->grav['debugger']->addMessage($this->page->template());
+
         if ($this->config->get('plugins.' . $this->pname . '.filter.template') && in_array($this->page->template(), $this->config->get('plugins.' . $this->pname . '.filter.template')))
             return false;
         //$this->grav['debugger']->addMessage('Template not filtererd : ' . $this->page->template());
@@ -465,7 +443,6 @@ class XapiPlugin extends Plugin {
                         return false;
                 }
             }
-            $this->grav['debugger']->addMessage('uri.routes not filtererd : ' . $uri->route());
             // queries
             if ($this->config->get('plugins.' . $this->pname . '.filter.uri.query')) {
                 $filtered_queries = $this->config->get('plugins.' . $this->pname . '.filter.uri.query');
@@ -474,7 +451,6 @@ class XapiPlugin extends Plugin {
                         return false;
                     } else if ($uri->query($v['key']) === $v['value'])
                         return false;
-                    //$this->grav['debugger']->addMessage('uri.query not filtererd : '.$uri->query($v['key']));
                 }
             }
         }
@@ -483,7 +459,6 @@ class XapiPlugin extends Plugin {
         if ($this->config->get('plugins.' . $this->pname . '.filter.users') && in_array($this->user->login, $this->config->get('plugins.' . $this->pname . '.filter.users'))) {
             return false;
         }
-        $this->grav['debugger']->addMessage('users not filtererd : ' . $this->user->login);
         // Do not track users if they belong to a certain group
         if ($this->config->get('plugins.' . $this->pname . '.filter.groups')) {
             if (isset($this->user->groups)) {
