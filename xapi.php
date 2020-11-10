@@ -278,7 +278,7 @@ class XapiPlugin extends Plugin {
      * @todo statics for common used verbs with multilang desc
      */
     protected function prepareVerb($verbID = '') {
-        $this->grav['debugger']->addMessage('grav xapi prepareVerb' . $verbID);
+//        $this->grav['debugger']->addMessage('grav xapi prepareVerb' . $verbID);
         if ($verbID == '') {
             $id = $this->verbs[$this->page->template()]['verbIRI'] ?? $this->verbs['default']['verbIRI'];
         } else {
