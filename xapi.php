@@ -208,7 +208,8 @@ class XapiPlugin extends Plugin {
         $q=[];
         $url_query_tab = strpos($uri_query,"&") ? explode("&", $uri_query) : [$uri_query]; // are ther multiple queries
         $trackAsExtension = $this->config->get('plugins.' . $this->pname . '.track_queries_as_extension');
-         $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);    
+         $this->grav['debugger']->addMessage('prepareQueries.$trackAsExtension '.$trackAsExtension);
+          $this->grav['debugger']->addMessage('prepareQueries.$url_query_tab '.$url_query_tab);  
         $tmp = [];
         foreach ($url_query_tab as $v)
         {
@@ -237,7 +238,7 @@ class XapiPlugin extends Plugin {
         $uri_query = $this->grav['uri']->query();
         //
         $queries = [];
-        $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
+       
         if($uri_query != "")
         {
             $queries = $this->prepareQueries($url_query, $lrs);
