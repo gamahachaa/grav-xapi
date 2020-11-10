@@ -240,7 +240,7 @@ class XapiPlugin extends Plugin {
                     }
                     
                 }
-                else if ($trackAsExtension && sizeof($tmp)>1)
+                if ($trackAsExtension)
                 {
                     $q[$tmp[0]]=$tmp[1];
                 }
