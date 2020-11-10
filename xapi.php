@@ -212,7 +212,7 @@ class XapiPlugin extends Plugin {
         foreach ($tab as $v)
         {
             $tmp = explode ("=", $v);
-            if(sizeof($tmp)>0)
+            if(count($tmp)>1)
             {
                 $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
                 if($tmp[0] == $this->config->get('plugins.' . $this->pname . '.search_queries.key'))
@@ -236,7 +236,7 @@ class XapiPlugin extends Plugin {
         $uri_query = $this->grav['uri']->query();
         $url_query_tab = explode("&", $uri_query);
         $queries = [];
-        if(sizeof($url_query_tab) >0)
+        if(count($url_query_tab) >0)
         {
             $queries = $this->prepareQueries($url_query_tab, $lrs);
         }
@@ -269,7 +269,7 @@ class XapiPlugin extends Plugin {
 //            }
 //        }
  
-        if(sizeof($queries)>0)
+        if(count($queries)>0)
         {
             $this->grav['debugger']->addMessage('prepareQueries.query '.$tmp[0]." => " .$tmp[1]);  
             $statement = $this->prepareStatement('', new Extensions($queries));
