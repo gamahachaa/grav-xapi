@@ -211,6 +211,7 @@ class XapiPlugin extends Plugin {
                     $stmt = $this->prepareStatement($searchQueryVerb, new Extensions(["https://" . $this->grav['uri']->host() . "/" . $tmp[0] => $tmp[1]]));
                     // SEND STATEMENT
                     $r = $lrs->saveStatement($stmt);
+                    
 
                     if (!$r->success) {
                         //uncomment for debugging
