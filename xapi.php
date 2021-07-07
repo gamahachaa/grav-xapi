@@ -14,8 +14,6 @@ use TinCan\RemoteLRS;
 use TinCan\Verb;
 use TinCan\Statement;
 
-//use Grav\Plugin\XapiPlugin\Verbs;
-
 /**
  * Class XapiPlugin
  * @package Grav\Plugin
@@ -75,8 +73,6 @@ class XapiPlugin extends Plugin {
         return require __DIR__ . '/vendor/autoload.php';
     }
 
-    //********************************************* EVENTS HANDLERS **************************************************************/
-    //********************************************* EVENTS HANDLERS **************************************************************/
     //********************************************* EVENTS HANDLERS **************************************************************/
     /**
      * Initialize the plugin
@@ -145,7 +141,7 @@ class XapiPlugin extends Plugin {
                 $this->trackFromServer($remote);
             }
         } else {
-            $this->grav['debugger']->addMessage("XAPI page filtered");
+            $this->grav['debugger']->addMessage("XAPI page filtered : ".$this->page->route());
         }
     }
 
