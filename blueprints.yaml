@@ -1,5 +1,5 @@
-name: Grav-Xapi
-version: 0.3.5
+name: Xapi
+version: 0.3.6
 description: Add to grav LRS connectivity and basic page activity statements tracking. Turns your favorite grav app into an simple Learning Management System.
 icon: graduation-cap
 author:
