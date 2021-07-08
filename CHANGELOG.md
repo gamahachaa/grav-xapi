@@ -1,5 +1,5 @@
 # v0.3.6
-##  03/01/2020
+##  08/07/2020
 
 1. [](#improved)
     * Query filtering
