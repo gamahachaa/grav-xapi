@@ -100,7 +100,7 @@ class XapiPlugin extends Plugin {
         $this->grav['debugger']->addMessage($this->grav['user']['ldap']['sAMAccountName']);
         $this->actor = $this->prepareAgent($this->user);
         
-        $this->grav['debugger']->addMessage($this->user);
+        $this->grav['debugger']->addMessage($this->user->ldap->sAMAccountName);
         // SET LRS credentials based on user's group profile
     }
 
@@ -306,7 +306,7 @@ class XapiPlugin extends Plugin {
     private function prepareAgent(User $gravUser) {
         return new Agent([
             'mbox' => 'mailto:' . strtolower($gravUser->email),
-            'name' => strtolower($gravUser->username)
+            'name' => strtolower(isset($this->user->ldap->sAMAccountName)?$this->user->ldap->sAMAccountName:$gravUser->username)
         ]);
     }
 
