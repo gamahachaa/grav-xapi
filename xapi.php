@@ -96,7 +96,7 @@ class XapiPlugin extends Plugin {
         $this->pname = 'xapi';
 
         $this->user = $this->grav['user'];
-        $this->grav['debugger']->addMessage($this->grav['user']);
+        $this->grav['debugger']->addMessage($this->grav['user']['ldap']['sAMAccountName']);
         $this->actor = $this->prepareAgent($this->user);
         
         $this->grav['debugger']->addMessage($this->grav['user']->ldap->sAMAccountName);
