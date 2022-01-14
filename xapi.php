@@ -86,7 +86,7 @@ class XapiPlugin extends Plugin {
         if (!$this->grav['config']->get('plugins.login.enabled')) {
             throw new \RuntimeException('The Login plugin needs to be installed and enabled');
         }
-        //$this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
+        $this->grav['debugger']->addMessage("XAPI onPluginsInitialized");
         $this->search_key = $this->config->get('plugins.' . $this->pname . '.search_queries.q');
         $this->lrss = [];
         $this->activityTypes = [];
