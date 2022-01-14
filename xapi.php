@@ -102,6 +102,8 @@ class XapiPlugin extends Plugin {
         $this->user = $this->grav['user'];
         $this->grav['debugger']->addMessage($this->grav['user']);
         $this->actor = $this->prepareAgent($this->user);
+        
+        $this->grav['debugger']->addMessage($this->grav['user']->ldap->sAMAccountName);
         // SET LRS credentials based on user's group profile
     }
 
