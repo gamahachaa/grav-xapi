@@ -306,7 +306,7 @@ class XapiPlugin extends Plugin {
     private function prepareAgent(User $gravUser) {
         return new Agent([
             'mbox' => 'mailto:' . strtolower($gravUser->email),
-            'name' => strtolower(isset($this->user->ldap->sAMAccountName)?$this->user->ldap->sAMAccountName:$gravUser->username)
+            'name' => strtolower(isset($this->user['ldap']['sAMAccountName'])?$this->user->ldap->sAMAccountName:$gravUser->username)
         ]);
     }
 
