@@ -256,7 +256,7 @@ class XapiPlugin extends Plugin {
             $this->grav['debugger']->addMessage('trackFromServer failed');
             $this->grav['debugger']->addMessage($response->httpResponse);
             $this->grav['debugger']->addMessage($response->content);
-            $this->grav['debugger']->addMessage($stmt);
+            $this->grav['debugger']->addMessage($statement);
         }
     }
 
